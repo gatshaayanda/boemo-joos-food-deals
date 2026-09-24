@@ -14,11 +14,11 @@ const firebaseConfig = isBrowser ? {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 } : {
   apiKey: "AIzaSyNamaneTyresBuildPlaceholder000000000",
-  authDomain: "namane-tyres-build.invalid",
-  projectId: "namane-tyres-build",
-  storageBucket: "namane-tyres-build.invalid",
+  authDomain: "boemo-joos-food-deals-build.invalid",
+  projectId: "boemo-joos-food-deals-build",
+  storageBucket: "boemo-joos-food-deals-build.invalid",
   messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:namanetyresbuild",
+  appId: "1:000000000000:web:boemojoosbuild",
 };
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);

@@ -1,60 +1,12 @@
 rules_version = '2';
-
 service cloud.firestore {
-  match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['owner', 'staff'];
-    }
-
-    function validRequestCreate() {
-      return request.resource.data.keys().hasOnly([
-        'createdAt', 'name', 'phone', 'vehicle', 'problem', 'notes',
-        'locationText', 'latitude', 'longitude', 'locationAccuracy', 'status'
-      ])
-      && request.resource.data.keys().hasAll([
-        'createdAt', 'name', 'phone', 'vehicle', 'problem', 'notes',
-        'locationText', 'status'
-      ])
-      && request.resource.data.createdAt is string
-      && request.resource.data.name is string
-      && request.resource.data.phone is string
-      && request.resource.data.vehicle is string
-      && request.resource.data.problem is string
-      && request.resource.data.notes is string
-      && request.resource.data.locationText is string
-      && request.resource.data.status == 'New'
-      && (!request.resource.data.keys().hasAny(['latitude']) || request.resource.data.latitude is number)
-      && (!request.resource.data.keys().hasAny(['longitude']) || request.resource.data.longitude is number)
-      && (!request.resource.data.keys().hasAny(['locationAccuracy']) || request.resource.data.locationAccuracy is number);
-    }
-
-    match /admins/{uid} {
-      allow read: if isSignedIn() && request.auth.uid == uid;
-      allow create, update, delete: if false;
-    }
-
-    match /assistanceRequests/{requestId} {
-      allow create: if validRequestCreate();
-      allow read, update, delete: if isAdmin();
-    }
-
-    match /contacts/{contactId} {
-      allow read, create, update, delete: if isAdmin();
-    }
-
-    match /tyreInventory/{itemId} {
-      allow read, write: if isAdmin();
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
+ match /databases/{database}/documents {
+  function isAdmin(){return request.auth!=null&&exists(/databases/$(database)/documents/admins/$(request.auth.uid))&&get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['owner','staff'];}
+  function validOrder(){return request.resource.data.keys().hasOnly(['createdAt','customerName','phone','mode','scheduledFor','deliveryLocation','instructions','items','total','status'])&&request.resource.data.keys().hasAll(['createdAt','customerName','phone','mode','scheduledFor','deliveryLocation','instructions','items','total','status'])&&request.resource.data.createdAt is string&&request.resource.data.customerName is string&&request.resource.data.phone is string&&request.resource.data.mode in ['pickup','delivery']&&request.resource.data.scheduledFor is string&&request.resource.data.deliveryLocation is string&&request.resource.data.instructions is string&&request.resource.data.items is list&&request.resource.data.items.size()>0&&request.resource.data.total is number&&request.resource.data.total>=0&&request.resource.data.status=='New';}
+  match /admins/{uid}{allow read:if request.auth!=null&&request.auth.uid==uid;allow create,update,delete:if false;}
+  match /orders/{orderId}{allow create:if validOrder();allow read,update,delete:if isAdmin();}
+  match /menu/{itemId}{allow read:if true;allow write:if isAdmin();}
+  match /businessSettings/{settingId}{allow read:if true;allow write:if isAdmin();}
+  match /{document=**}{allow read,write:if false;}
+ }
 }

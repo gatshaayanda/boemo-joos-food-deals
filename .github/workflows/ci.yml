@@ -1,4 +1,4 @@
-name: Meating Place CI
+name: BOEMO CI
 
 on:
   push:
