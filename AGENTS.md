@@ -108,3 +108,8 @@ Do not run npm audit fix --force blindly. Never commit private credentials.
 
 ## Checkpoint
 Review the actual diff before committing. Commit meaningful checkpoints. Avoid unnecessary Vercel deployments.
+## Firebase environment and build safety
+- Firebase web configuration is public client configuration and must come from `NEXT_PUBLIC_FIREBASE_*` environment variables in deployed/runtime environments.
+- The Firebase client contains non-secret build placeholders so CI can prerender client routes when those environment variables are intentionally absent. Those placeholders are not a Firebase project and must never be treated as runtime configuration.
+- Before live Firebase testing, confirm the deployment has the real BOEMO Firebase environment variables for the relevant environment.
+- Anonymous Authentication is enabled in the BOEMO Firebase project. Guest checkout should therefore create an anonymous Firebase user when the client is online and configured correctly; checkout must still retain its guest fallback if authentication cannot be established.
