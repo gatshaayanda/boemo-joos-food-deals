@@ -5,6 +5,9 @@ BOEMO Joos Food Deals is the real customer-facing ordering and lightweight opera
 
 This is a real small-business product, not a demo, template, QA app, or generic SaaS.
 
+## Project boundary
+This AGENTS.md governs **only** `gatshaayanda/boemo-joos-food-deals`. Do not apply another project's assumptions, branding, Firebase identifiers, collections, assets, workflows or product rules here. In particular, do not confuse BOEMO with Namane Tyres, Admin Hub Games, BoardSignal, or other repositories.
+
 ## Roles
 - Product owner / final reviewer: user
 - Technical navigator + implementation: ChatGPT through repository tooling
@@ -19,6 +22,19 @@ Before changing code, inspect repository, Git state, Firebase configuration, dep
 
 ## Product model
 Customer → Menu / Deals → Order ahead → Kitchen queue → Pickup or Delivery → Complete
+
+## Customer accounts and guest ordering
+Authentication is **never a prerequisite for buying food**.
+
+The primary checkout choice is:
+- **Order as Guest** — name, WhatsApp/phone, order details, pickup or delivery, then submit.
+- Guest details should be saved to Firebase when a guest Firebase session can be created; local/offline ordering must not be blocked if account/session creation fails.
+- Returning customers should see saved details when the same device/session is available.
+- Firebase anonymous authentication may provide the guest customer UID; `customers/{uid}` stores the saved profile.
+- A guest can later upgrade that profile to a durable account, including **Continue with Google**. Linking Google to the existing guest user must preserve the customer's BOEMO profile/order association.
+- Email-link authentication is optional and must never be required for ordinary ordering. The Spark-plan email-link daily limit must not become a checkout dependency.
+- Customer profile fields: name, email, WhatsApp/phone, optional preferred delivery location, optional notes.
+- Customers may read/write only their own profile. Customer order reads are limited to orders associated with their authenticated UID; admin owner/staff retain operational access.
 
 ## Customer experience
 Make these obvious on a phone:
@@ -53,6 +69,7 @@ Beggar + Chips + Drink P40
 ## Ordering
 Orders preserve item and price snapshots.
 Modes: pickup or delivery.
+Orders may include an optional `customerId` so guest orders can become part of a customer's future history without changing the fast guest checkout.
 Delivery captures location/landmark, phone and instructions.
 
 Statuses:
@@ -68,7 +85,7 @@ Maintain installable manifest, service worker, offline route, public app-shell c
 BOEMO must use its own dedicated Firebase project. Never reuse another application's identifiers, credentials, collections, seed data or rules. Browser config uses NEXT_PUBLIC_FIREBASE_* only.
 
 ## Firestore boundary
-Public customers may create validated orders. Customers cannot read/update/delete orders. admins/{uid}.role owner/staff may read/update orders and manage future menu/business settings.
+Public customers may create validated orders. Authenticated customers may access only their own `customers/{uid}` profile and associated orders. admins/{uid}.role owner/staff may read/update operational orders and manage future menu/business settings. Never expose customer profiles publicly or weaken rules to hide UI/configuration problems.
 
 Never weaken rules to hide UI/configuration problems.
 
