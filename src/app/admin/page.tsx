@@ -3,7 +3,7 @@ import Link from "next/link";
 import {useEffect,useMemo,useState} from "react";
 import {getDownloadURL,ref,uploadBytes} from "firebase/storage";
 import AdminGate from "@/app/admin/admin-gate";
-import {auth,storage} from "@/lib/firebase/client";
+import {storage} from "@/lib/firebase/client";
 import {deleteMenuItem,getBusinessSettings,getDailyReconciliation,getFoodOrders,getMenuItems,saveBusinessSettings,saveDailyReconciliation,saveMenuItem,updateFoodOrderPayment,updateFoodOrderStatus,ORDER_STATUSES,type BusinessSettings,type DailyReconciliation,type FoodOrder,type MenuItem,type OrderStatus,type PaymentMethod,type PaymentStatus} from "@/lib/firebase/data";
 
 const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
