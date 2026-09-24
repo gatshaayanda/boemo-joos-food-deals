@@ -29,7 +29,10 @@ service cloud.firestore {
           'instructions',
           'items',
           'total',
-          'status'
+          'status',
+          'paymentStatus',
+          'paymentMethod',
+          'amountPaid'
         ])
         && request.resource.data.keys().hasAll([
           'createdAt',
@@ -82,13 +85,40 @@ service cloud.firestore {
         && request.resource.data.updatedAt is string;
     }
 
+    function validReconciliation() {
+      return request.resource.data.keys().hasOnly([
+        'date',
+        'actualCash',
+        'actualETransfer',
+        'actualOther',
+        'notes',
+        'updatedAt'
+      ])
+      && request.resource.data.keys().hasAll([
+        'date',
+        'actualCash',
+        'actualETransfer',
+        'actualOther',
+        'notes',
+        'updatedAt'
+      ])
+      && request.resource.data.date is string
+      && request.resource.data.actualCash is number
+      && request.resource.data.actualCash >= 0
+      && request.resource.data.actualETransfer is number
+      && request.resource.data.actualETransfer >= 0
+      && request.resource.data.actualOther is number
+      && request.resource.data.actualOther >= 0
+      && request.resource.data.notes is string
+      && request.resource.data.updatedAt is string;
+    }
+
     match /admins/{uid} {
       allow read: if isOwner(uid);
       allow create, update, delete: if false;
     }
 
     match /customers/{uid} {
-      // Reads do not have request.resource, so validation belongs on writes only.
       allow read: if isOwner(uid);
       allow create, update: if isOwner(uid) && validCustomer(uid);
       allow delete: if false;
@@ -118,6 +148,10 @@ service cloud.firestore {
     match /businessSettings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /dailyReconciliations/{date} {
+      allow read, write: if isAdmin() && validReconciliation();
     }
 
     match /{document=**} {
