@@ -8,6 +8,16 @@ function hasAdminRole(data:Record<string,unknown>|undefined){
  return ["owner","staff"].includes(String(data?.role??"").toLowerCase());
 }
 
+function friendlyAuthError(err:unknown){
+ const code=typeof err==="object"&&err!==null&&"code" in err?String((err as {code?:unknown}).code):"";
+ if(["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-login-credentials"].includes(code)){
+  return "Sign-in failed. Check your email and password and try again.";
+ }
+ if(code==="auth/too-many-requests") return "Too many sign-in attempts. Wait a moment and try again.";
+ if(code==="auth/network-request-failed") return "We could not reach Firebase. Check your internet connection and try again.";
+ return err instanceof Error?err.message:"We could not sign you in. Check your details.";
+}
+
 export default function AdminGate({children}:{children:React.ReactNode}){
  const[user,setUser]=useState<User|null>(null),[checking,setChecking]=useState(true),[authorized,setAuthorized]=useState(false),[offline,setOffline]=useState(false),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false);
 
@@ -26,9 +36,6 @@ export default function AdminGate({children}:{children:React.ReactNode}){
     setChecking(false);
     if(!allowed)void signOut(auth);
    },()=>{
-    // Firestore persistent cache can continue serving a previously verified
-    // admin while the network is unavailable. Do not log out an authorized
-    // session merely because the server cannot be reached.
     setOffline(true);
     setChecking(false);
    });
@@ -50,7 +57,7 @@ export default function AdminGate({children}:{children:React.ReactNode}){
     setAuthorized(true);
     setOffline(false);
    }
-  }catch(err){setError(err instanceof Error?err.message:"We could not sign you in. Check your details.")}
+  }catch(err){setError(friendlyAuthError(err))}
   finally{setBusy(false)}
  }
 
