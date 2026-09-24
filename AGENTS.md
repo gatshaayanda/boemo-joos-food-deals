@@ -117,3 +117,11 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - The Firebase client contains non-secret build placeholders so CI can prerender client routes when those environment variables are intentionally absent. Those placeholders are not a Firebase project and must never be treated as runtime configuration.
 - Before live Firebase testing, confirm the deployment has the real BOEMO Firebase environment variables for the relevant environment.
 - Anonymous Authentication is enabled in the BOEMO Firebase project. Guest checkout should therefore create an anonymous Firebase user when the client is online and configured correctly; checkout must still retain its guest fallback if authentication cannot be established.
+
+## Menu publishing and financial reconciliation
+- Owner/staff can control public menu prices, Bring-a-Friend prices, availability, food photos, and whether an item belongs to Today's Food or the everyday/deal menu.
+- Today's Food is data-driven from `menu` items scheduled to specific weekdays. Keep the supplied weekly menu as a safe public fallback until the owner publishes daily items.
+- Food photos are uploaded by authorized admin users to Firebase Storage under `boemoMedia/`; do not expose arbitrary storage writes.
+- Orders preserve item/price snapshots. Payment collection is tracked separately from the sale: payment method, payment status, and amount actually recorded as received.
+- Financials are a daily reconciliation view: expected order sales, recorded payments by method, outstanding amounts, actual cash/e-transfer/other received, and variances. This is not a profit-and-loss report because BOEMO does not yet record food costs or other expenses.
+- Do not mark an order paid merely because it was submitted. The kitchen records payment when cash or an e-transfer is actually received.
