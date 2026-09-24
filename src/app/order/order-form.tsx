@@ -22,8 +22,19 @@ export default function OrderForm(){
    if(!customer){try{customer=(await signInAnonymously(auth)).user}catch(authError){console.warn("BOEMO anonymous auth unavailable",authError);customer=null}}
    const order={...(customer?{customerId:customer.uid}:{}),createdAt:new Date().toISOString(),customerName:name,phone,mode,scheduledFor,deliveryLocation,instructions,items:selected.map(({name,price,quantity})=>({name,price,quantity})),total,status:"New" as const};
    const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id.slice(0,8).toUpperCase());
-   if(customer){const now=new Date().toISOString(),existing=await getCustomerProfile(customer.uid);const profile={uid:customer.uid,name,email:customer.email??existing?.email??"",phone,preferredDeliveryLocation:deliveryLocation||existing?.preferredDeliveryLocation||"",notes:instructions||existing?.notes||"",createdAt:existing?.createdAt??now,updatedAt:now};void saveCustomerProfile(profile).catch(console.error)}
+   // Customer profile persistence is a convenience, never a reason to reject an order.
+   // Firestore may deny/read-fail an empty profile while the order write itself is valid.
    if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false)}
+   if(customer){
+    const now=new Date().toISOString();
+    void getCustomerProfile(customer.uid)
+      .catch(profileError=>{console.warn("BOEMO customer profile read unavailable",profileError);return null})
+      .then(existing=>{
+       const profile={uid:customer.uid,name,email:customer.email??existing?.email??"",phone,preferredDeliveryLocation:deliveryLocation||existing?.preferredDeliveryLocation||"",notes:instructions||existing?.notes||"",createdAt:existing?.createdAt??now,updatedAt:now};
+       return saveCustomerProfile(profile);
+      })
+      .catch(profileError=>console.warn("BOEMO customer profile save unavailable",profileError));
+   }
    setSubmitted(true);event.currentTarget.reset();
   }catch(error){console.error("BOEMO order submission failed",error);setError("The order could not be confirmed online. Please check the connection and try again, or call BOEMO on 76425849 / 76769834.")}finally{setBusy(false)}
  }
