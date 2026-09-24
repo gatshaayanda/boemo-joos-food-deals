@@ -90,7 +90,11 @@ Public customers may create validated orders. Authenticated customers may access
 Never weaken rules to hide UI/configuration problems.
 
 ## Admin
-/admin is a practical kitchen operations surface: today's queue, order details, status updates and delivery queue. Do not build a generic CRM/ERP/accounting system.
+/admin is a practical kitchen operations surface: today's queue, order details, status updates and delivery queue, plus owner-controlled menu and today's location/serving hours. Do not build a generic CRM/ERP/accounting system.
+
+The admin gate accepts Google or Email/Password Firebase users, but access is granted only when `admins/{uid}.role` is `owner` or `staff`. The first owner must be bootstrapped in Firebase Console; never hard-code an admin UID into the app.
+
+The customer order page may use Firestore `menu` data when available, with the supplied static BOEMO deals as the safe fallback. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
 
 ## Media
 Use supplied BOEMO food assets under public/boemo-assets/. Do not use inherited Namane assets as BOEMO content.
