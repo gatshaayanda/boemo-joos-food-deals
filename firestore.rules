@@ -151,7 +151,8 @@ service cloud.firestore {
     }
 
     match /dailyReconciliations/{date} {
-      allow read, write: if isAdmin() && validReconciliation();
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && validReconciliation();
     }
 
     match /{document=**} {
