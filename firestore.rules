@@ -1,15 +1,125 @@
 rules_version = '2';
+
 service cloud.firestore {
- match /databases/{database}/documents {
-  function isAdmin(){return request.auth!=null&&exists(/databases/$(database)/documents/admins/$(request.auth.uid))&&get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['owner','staff'];}
-  function isOwner(uid){return request.auth!=null&&request.auth.uid==uid;}
-  function validOrder(){return request.resource.data.keys().hasOnly(['customerId','createdAt','customerName','phone','mode','scheduledFor','deliveryLocation','instructions','items','total','status'])&&request.resource.data.keys().hasAll(['createdAt','customerName','phone','mode','scheduledFor','deliveryLocation','instructions','items','total','status'])&&request.resource.data.createdAt is string&&request.resource.data.customerName is string&&request.resource.data.phone is string&&request.resource.data.mode in ['pickup','delivery']&&request.resource.data.scheduledFor is string&&request.resource.data.deliveryLocation is string&&request.resource.data.instructions is string&&request.resource.data.items is list&&request.resource.data.items.size()>0&&request.resource.data.total is number&&request.resource.data.total>=0&&request.resource.data.status=='New'&&(!request.resource.data.keys().hasAny(['customerId'])||request.resource.data.customerId is string);}
-  function validCustomer(){return request.resource.data.keys().hasOnly(['uid','name','email','phone','preferredDeliveryLocation','notes','createdAt','updatedAt'])&&request.resource.data.uid is string&&request.resource.data.name is string&&request.resource.data.email is string&&request.resource.data.phone is string&&request.resource.data.preferredDeliveryLocation is string&&request.resource.data.notes is string&&request.resource.data.createdAt is string&&request.resource.data.updatedAt is string;}
-  match /admins/{uid}{allow read:if isOwner(uid);allow create,update,delete:if false;}
-  match /customers/{uid}{allow read,create,update:if isOwner(uid)&&validCustomer();allow delete:if false;}
-  match /orders/{orderId}{allow create:if validOrder()&&(!request.resource.data.keys().hasAny(['customerId'])||isOwner(request.resource.data.customerId));allow read,update,delete:if isAdmin()||(isOwner(resource.data.customerId)&&request.resource.data.customerId==resource.data.customerId);}
-  match /menu/{itemId}{allow read:if true;allow write:if isAdmin();}
-  match /businessSettings/{settingId}{allow read:if true;allow write:if isAdmin();}
-  match /{document=**}{allow read,write:if false;}
- }
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['owner', 'staff'];
+    }
+
+    function validOrder() {
+      return request.resource.data.keys().hasOnly([
+          'customerId',
+          'createdAt',
+          'customerName',
+          'phone',
+          'mode',
+          'scheduledFor',
+          'deliveryLocation',
+          'instructions',
+          'items',
+          'total',
+          'status'
+        ])
+        && request.resource.data.keys().hasAll([
+          'createdAt',
+          'customerName',
+          'phone',
+          'mode',
+          'scheduledFor',
+          'deliveryLocation',
+          'instructions',
+          'items',
+          'total',
+          'status'
+        ])
+        && request.resource.data.createdAt is string
+        && request.resource.data.customerName is string
+        && request.resource.data.phone is string
+        && request.resource.data.mode in ['pickup', 'delivery']
+        && request.resource.data.scheduledFor is string
+        && request.resource.data.deliveryLocation is string
+        && request.resource.data.instructions is string
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.status == 'New'
+        && (
+          !request.resource.data.keys().hasAny(['customerId'])
+          || request.resource.data.customerId is string
+        );
+    }
+
+    function validCustomer(uid) {
+      return request.resource.data.keys().hasOnly([
+          'uid',
+          'name',
+          'email',
+          'phone',
+          'preferredDeliveryLocation',
+          'notes',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.phone is string
+        && request.resource.data.preferredDeliveryLocation is string
+        && request.resource.data.notes is string
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string;
+    }
+
+    match /admins/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update, delete: if false;
+    }
+
+    match /customers/{uid} {
+      allow read, create, update: if isOwner(uid) && validCustomer(uid);
+      allow delete: if false;
+    }
+
+    match /orders/{orderId} {
+      allow create: if validOrder()
+        && (
+          !request.resource.data.keys().hasAny(['customerId'])
+          || isOwner(request.resource.data.customerId)
+        );
+
+      allow read: if isAdmin()
+        || (
+          resource.data.keys().hasAny(['customerId'])
+          && isOwner(resource.data.customerId)
+        );
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /businessSettings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
 }
