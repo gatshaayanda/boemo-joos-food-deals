@@ -29,10 +29,7 @@ service cloud.firestore {
           'instructions',
           'items',
           'total',
-          'status',
-          'paymentStatus',
-          'paymentMethod',
-          'amountPaid'
+          'status'
         ])
         && request.resource.data.keys().hasAll([
           'createdAt',
