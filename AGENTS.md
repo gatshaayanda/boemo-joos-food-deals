@@ -94,7 +94,13 @@ Never weaken rules to hide UI/configuration problems.
 
 The admin gate accepts Google or Email/Password Firebase users, but access is granted only when `admins/{uid}.role` is `owner` or `staff`. The first owner must be bootstrapped in Firebase Console; never hard-code an admin UID into the app.
 
-The customer order page may use Firestore `menu` data when available, with the supplied static BOEMO deals as the safe fallback. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
+The public home and customer order page must use the Firestore `menu` collection as the source of truth. The first authorized Kitchen load seeds the supplied starter menu into Firestore with stable IDs; the owner/staff can then CRUD those same records. Do not reintroduce hard-coded menu/deal fallbacks. If no menu is published or the menu cannot be loaded, show a clear BOEMO phone fallback (76425849 / 76769834) instead of inventing or silently restoring old prices. Starter daily meals whose prices were not supplied are seeded unpublished until the owner enters the real price and makes them available. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
+
+## Menu source of truth
+- `menu/{stable-id}` records are the customer-facing source of truth for daily food and deals.
+- The first authorized Kitchen load seeds the supplied starter menu once and records a `businessSettings/menu-seed-v1` marker so deleting menu items later is a real CRUD action and does not silently reseed them.
+- Supplied daily meal names without supplied prices start unpublished (`available=false`) to prevent accidental zero-price ordering; the owner must set the real price and publish them.
+- If the public app has no published menu, direct customers to call BOEMO on 76425849 / 76769834 rather than showing stale hard-coded menu data.
 
 ## Media
 Use supplied BOEMO food assets under public/boemo-assets/. Do not use inherited Namane assets as BOEMO content.
