@@ -125,3 +125,36 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - Orders preserve item/price snapshots. Payment collection is tracked separately from the sale: payment method, payment status, and amount actually recorded as received.
 - Financials are a daily reconciliation view: expected order sales, recorded payments by method, outstanding amounts, actual cash/e-transfer/other received, and variances. This is not a profit-and-loss report because BOEMO does not yet record food costs or other expenses.
 - Do not mark an order paid merely because it was submitted. The kitchen records payment when cash or an e-transfer is actually received.
+
+
+## Current operating architecture (September 2026)
+- The kitchen queue is realtime: authorized admin clients subscribe to Firestore orders, menu and business settings rather than relying on manual refresh alone. Manual Refresh remains a recovery/control action.
+- Firestore persistent local cache uses the multi-tab cache. Firebase documents that queued writes synchronize when connectivity returns; the UI must distinguish a local/offline save from a write confirmed by the backend.
+- The customer order flow remains guest-first. Anonymous Firebase Auth is a convenience for profile/order association, not a prerequisite for buying.
+- The PWA service worker caches the public app shell plus /account and /admin. Private Firestore data is not copied into the service-worker cache; Firebase's own Firestore persistence handles authenticated/offline data.
+- Firebase Storage admin access must recognize the same owner/staff roles as Firestore, including the currently used capitalized Owner/Staff values.
+- Food photos are public-read and admin-write under boemoMedia/, with image-only uploads and a 12 MB per-file limit.
+- Browser push notifications are a later phase. Firebase Cloud Messaging for Web requires HTTPS, notification permission and a service-worker/token setup; do not promise push notifications until that infrastructure is implemented and tested.
+
+## Security and data integrity guardrails
+- Firestore rules are part of the source-of-truth repository, but changing firestore.rules or storage.rules in GitHub does not by itself deploy them to Firebase. Treat Firebase Rules deployment as a separate checkpoint and verify the live Rules tab after deployment.
+- Never make /orders/{id} publicly readable merely to make a tracking link convenient. Current order reads require the attached customer UID or authorized admin access.
+- Never expose customer profiles publicly.
+- Client-side order totals/prices are convenience data and must not be treated as payment proof. If BOEMO later accepts online payments, introduce server-side/payment-provider verification rather than trusting browser fields.
+- Do not silently turn Firestore permission errors into "offline mode." Offline authorization is only appropriate for an already-authorized cached admin session; permission/configuration failures must remain visible.
+- Storage uploads require connectivity even though Firestore data can queue offline. The UI should not describe an unuploaded photo as published.
+
+## Current product maturity
+BOEMO is now a working small-business operations PWA foundation:
+1. public mobile storefront and weekly menu fallback;
+2. admin-controlled Today's Food, everyday/deal prices, Bring-a-Friend pricing, availability and food photos;
+3. mobile-kitchen location and serving-hours publishing;
+4. guest-first scheduled pickup/delivery orders;
+5. customer account/profile and same-account order history;
+6. live order tracking for authenticated/associated orders;
+7. PDF receipts and printing;
+8. realtime kitchen queue and order status/payment recording;
+9. daily cash/e-transfer/other reconciliation;
+10. installable/offline shell and Firestore offline persistence.
+
+The next work should deepen reliability and business operations rather than add unrelated features.
