@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from "react";
 import {getDownloadURL,ref,uploadBytes} from "firebase/storage";
 import AdminGate from "@/app/admin/admin-gate";
 import {storage} from "@/lib/firebase/client";
-import {deleteMenuItem,getBusinessSettings,getDailyReconciliation,getFoodOrders,getMenuItems,saveBusinessSettings,saveDailyReconciliation,saveMenuItem,updateFoodOrderPayment,updateFoodOrderStatus,ORDER_STATUSES,type BusinessSettings,type DailyReconciliation,type FoodOrder,type MenuItem,type OrderStatus,type PaymentMethod,type PaymentStatus} from "@/lib/firebase/data";
+import {deleteMenuItem,ensureStarterMenuSeeded,getBusinessSettings,getDailyReconciliation,getFoodOrders,getMenuItems,saveBusinessSettings,saveDailyReconciliation,saveMenuItem,updateFoodOrderPayment,updateFoodOrderStatus,ORDER_STATUSES,type BusinessSettings,type DailyReconciliation,type FoodOrder,type MenuItem,type OrderStatus,type PaymentMethod,type PaymentStatus} from "@/lib/firebase/data";
 
 const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 const money=(n:number)=>`P${n.toFixed(2)}`;
@@ -13,7 +13,7 @@ const blankMenu:MenuItem={id:"",name:"",price:0,friendPrice:undefined,category:"
 function Dashboard(){
  const[orders,setOrders]=useState<FoodOrder[]>([]),[menu,setMenu]=useState<MenuItem[]>([]),[settings,setSettings]=useState<BusinessSettings>({id:"main",location:"",hours:"",locationNote:"",updatedAt:new Date().toISOString()}),[loading,setLoading]=useState(true),[notice,setNotice]=useState(""),[tab,setTab]=useState<"orders"|"menu"|"location"|"financials">("orders"),[menuDraft,setMenuDraft]=useState<MenuItem>(blankMenu),[uploading,setUploading]=useState(false),[financialDate,setFinancialDate]=useState(new Date().toISOString().slice(0,10)),[reconciliation,setReconciliation]=useState<DailyReconciliation>({date:new Date().toISOString().slice(0,10),actualCash:0,actualETransfer:0,actualOther:0,notes:"",updatedAt:new Date().toISOString()}),[savingRecon,setSavingRecon]=useState(false);
 
- async function load(){setLoading(true);try{const [ordersResult,menuResult,settingsResult]=await Promise.all([getFoodOrders(),getMenuItems(),getBusinessSettings()]);setOrders(ordersResult);setMenu(menuResult);if(settingsResult)setSettings(settingsResult)}catch{setNotice("BOEMO data could not be loaded. Check Firebase access and connectivity.")}finally{setLoading(false)}}
+ async function load(){setLoading(true);try{const [ordersResult,menuResult,settingsResult]=await Promise.all([getFoodOrders(),ensureStarterMenuSeeded(),getBusinessSettings()]);setOrders(ordersResult);setMenu(menuResult);if(settingsResult)setSettings(settingsResult)}catch{setNotice("BOEMO data could not be loaded. Check Firebase access and connectivity.")}finally{setLoading(false)}}
  useEffect(()=>{void load()},[]);
  useEffect(()=>{if(tab!=="financials")return;void getDailyReconciliation(financialDate).then(record=>setReconciliation(record??{date:financialDate,actualCash:0,actualETransfer:0,actualOther:0,notes:"",updatedAt:new Date().toISOString()})).catch(()=>setNotice("Financial reconciliation could not be loaded."))},[tab,financialDate]);
 
