@@ -2,7 +2,7 @@
 import Link from "next/link";
 import {FormEvent,useEffect,useMemo,useState} from "react";
 import {signInAnonymously,onAuthStateChanged,type User} from "firebase/auth";
-import {createFoodOrder,getCustomerProfile,getMenuItems,saveCustomerProfile,type OrderItem,type MenuItem} from "@/lib/firebase/data";
+import {createFoodOrder,getCustomerProfile,getMenuItems,saveCustomerProfile,type OrderItem} from "@/lib/firebase/data";
 import {auth} from "@/lib/firebase/client";
 const baseItems:OrderItem[]=[];
 export default function OrderForm(){
