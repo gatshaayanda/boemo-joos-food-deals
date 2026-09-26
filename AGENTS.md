@@ -112,6 +112,12 @@ Do not run npm audit fix --force blindly. Never commit private credentials.
 
 ## Checkpoint
 Review the actual diff before committing. Commit meaningful checkpoints. Avoid unnecessary Vercel deployments.
+## Firebase Authentication deployment contract
+- BOEMO's production Vercel hostname is `boemo-joos-food-deals.vercel.app` and must be present in Firebase Authentication → Settings → Authorized domains. Google sign-in cannot be repaired in application code when Firebase returns `auth/unauthorized-domain`; this is a live Firebase project setting.
+- The Firebase project's default auth domain is `boemo-joos-food-deals.firebaseapp.com`. Keep that project identity in the deployed `NEXT_PUBLIC_FIREBASE_*` configuration.
+- Google sign-in uses the existing Firebase popup flow. Guest users are upgraded with `linkWithPopup`, preserving the anonymous UID and its order/profile association; standalone Google sign-in creates a normal Firebase user.
+- When troubleshooting `auth/unauthorized-domain`, verify the exact browser hostname, Firebase Authorized Domains, Google provider configuration, and deployed environment variables before changing application auth code.
+
 ## Firebase environment and build safety
 - Firebase web configuration is public client configuration and must come from `NEXT_PUBLIC_FIREBASE_*` environment variables in deployed/runtime environments.
 - The Firebase client contains non-secret build placeholders so CI can prerender client routes when those environment variables are intentionally absent. Those placeholders are not a Firebase project and must never be treated as runtime configuration.
