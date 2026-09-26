@@ -3,7 +3,7 @@ import Link from "next/link";
 import {GoogleAuthProvider,linkWithPopup,onAuthStateChanged,signInWithPopup,type User} from "firebase/auth";
 import {useEffect,useState} from "react";
 import {auth} from "@/lib/firebase/client";
-import {getFoodOrder,isAdminUser,subscribeToFoodOrder,type FoodOrder} from "@/lib/firebase/data";
+import {getFoodOrder,subscribeToFoodOrder,type FoodOrder} from "@/lib/firebase/data";
 import {downloadReceiptPdf} from "@/lib/boemo/receipt";
 function statusText(status:FoodOrder["status"]){return status==="New"?"Order received":status}
 function authMessage(error:unknown){const code=typeof error==="object"&&error&&"code" in error?String((error as {code?:unknown}).code):"";if(code==="auth/unauthorized-domain")return `Google sign-in is not enabled for ${window.location.hostname} yet. Add this website to Firebase Authentication → Settings → Authorized domains.`;return error instanceof Error?error.message:"Google sign-in could not be completed."}
