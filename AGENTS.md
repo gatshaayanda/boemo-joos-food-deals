@@ -94,7 +94,7 @@ Never weaken rules to hide UI/configuration problems.
 
 The admin gate accepts Google or Email/Password Firebase users, but access is granted only when `admins/{uid}.role` is `owner` or `staff`. The first owner must be bootstrapped in Firebase Console; never hard-code an admin UID into the app.
 
-The customer order page may use Firestore `menu` data when available, with the supplied static BOEMO deals as the safe fallback. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
+The public home and customer order page use the Firestore `menu` collection as the source of truth. The first authorized Kitchen load seeds the supplied starter menu into Firestore with stable IDs; owner/staff can then CRUD those same records. Do not reintroduce hard-coded menu/deal fallbacks. If no menu is published or the menu cannot be loaded, show the BOEMO phone fallback (76425849 / 76769834) rather than stale prices. Starter daily meals whose prices were not supplied remain unpublished until the owner enters the real price and makes them available. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
 
 ## Media
 Use supplied BOEMO food assets under public/boemo-assets/. Do not use inherited Namane assets as BOEMO content.
@@ -158,3 +158,9 @@ BOEMO is now a working small-business operations PWA foundation:
 10. installable/offline shell and Firestore offline persistence.
 
 The next work should deepen reliability and business operations rather than add unrelated features.
+
+
+## BOEMO commercial offer — September 2026
+- Existing BOEMO monthly food-subscription offer: **P600 per month**, covering Monday through Sunday.
+- Exact subscription entitlement, meal-selection rules, pickup/delivery treatment, payment/renewal workflow and cancellation rules are not yet defined in the app; do not invent them or advertise online subscription checkout until those rules are agreed and implemented.
+- Primary contact for the subscription offer: **76425849**.
