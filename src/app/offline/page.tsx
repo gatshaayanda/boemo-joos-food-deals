@@ -1,5 +1,24 @@
 import Link from "next/link";
 
 export default function OfflinePage() {
-  return <main className="bookPage"><nav className="nav"><div className="container navInner"><Link href="/" className="logo"><span className="logoMark">NT</span><span>Namane Tyres</span></Link></div></nav><div className="formWrap"><div className="formCard confirm"><div className="confirmIcon">📶</div><span className="kicker">Offline mode</span><h1>Still usable.</h1><p>Previously loaded Namane Tyres pages and public assets can remain available on this device.</p><p>You can open Request Help and queue a request through Firestore supported offline persistence. It is not considered received by the business until synchronization completes.</p><div className="actions centered"><Link className="button buttonPrimary" href="/book">Request Help</Link><Link className="button buttonLight" href="/">Open Namane Tyres</Link></div></div></div></main>;
+  return (
+    <main className="orderPage">
+      <div className="orderWrap">
+        <div className="orderHeader">
+          <Link href="/" className="logo"><span className="logoMark">B</span><span>BOEMO</span></Link>
+        </div>
+        <section className="orderCard confirm">
+          <div className="confirmIcon">📶</div>
+          <span className="kicker">Offline mode</span>
+          <h1>BOEMO is still here.</h1>
+          <p>The BOEMO app shell and previously loaded public pages can remain available on this device while your connection is away.</p>
+          <p>Firestore can keep an eligible order write locally and synchronize it later, but the kitchen has not received an offline order until Firebase confirms synchronization.</p>
+          <div className="actions centered">
+            <Link className="button buttonPrimary" href="/order">Open Order</Link>
+            <Link className="button buttonLight" href="/">Open BOEMO</Link>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 }
