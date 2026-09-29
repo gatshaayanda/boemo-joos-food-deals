@@ -133,6 +133,12 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - Do not mark an order paid merely because it was submitted. The kitchen records payment when cash or an e-transfer is actually received.
 
 
+
+## Menu-entry UX checkpoint (September 2026)
+- The public home separates `section: "daily"` + today's `days` from `section: "deal"` items. New kitchen menu entries default to Today's Food for the current Botswana day, rather than silently landing in Deals.
+- Existing edits preserve their stored section/days. An item previously saved as a Deal must be edited and switched to Today's Food; code must not silently reinterpret an existing Deal as today's meal.
+- New menu-entry defaults use Africa/Gaborone so the kitchen's current day matches the public customer's day.
+
 ## Current operating architecture (September 2026)
 - The kitchen queue is realtime: authorized admin clients subscribe to Firestore orders, menu and business settings rather than relying on manual refresh alone. Manual Refresh remains a recovery/control action.
 - Firestore persistent local cache uses the multi-tab cache. Firebase documents that queued writes synchronize when connectivity returns; the UI must distinguish a local/offline save from a write confirmed by the backend.
