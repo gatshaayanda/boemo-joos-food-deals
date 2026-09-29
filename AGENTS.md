@@ -139,6 +139,12 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - Existing edits preserve their stored section/days. An item previously saved as a Deal must be edited and switched to Today's Food; code must not silently reinterpret an existing Deal as today's meal.
 - New menu-entry defaults use Africa/Gaborone so the kitchen's current day matches the public customer's day.
 
+
+## Legacy menu correction checkpoint (September 2026)
+- A one-time authorized-kitchen migration converts legacy custom items that were saved by the old New Item form as `section: deal`, `category: Deal`, and an auto-generated ID into Today's Food for the current Africa/Gaborone day, but only when today's published daily section is empty.
+- Starter deal records with stable `deal-` IDs are never migrated. The migration writes a marker so it cannot repeatedly reinterpret future menu edits.
+- This protects the customer's existing starter deals while correcting the specific old-form mistake that put newly entered food under Deals.
+
 ## Current operating architecture (September 2026)
 - The kitchen queue is realtime: authorized admin clients subscribe to Firestore orders, menu and business settings rather than relying on manual refresh alone. Manual Refresh remains a recovery/control action.
 - Firestore persistent local cache uses the multi-tab cache. Firebase documents that queued writes synchronize when connectivity returns; the UI must distinguish a local/offline save from a write confirmed by the backend.
