@@ -182,3 +182,8 @@ The next work should deepen reliability and business operations rather than add 
 - Existing BOEMO monthly food-subscription offer: **P600 per month**, covering Monday through Sunday.
 - Exact subscription entitlement, meal-selection rules, pickup/delivery treatment, payment/renewal workflow and cancellation rules are not yet defined in the app; do not invent them or advertise online subscription checkout until those rules are agreed and implemented.
 - Primary contact for the subscription offer: **76425849**.
+
+
+## Current-service menu placement correction (September 2026)
+- Legacy custom menu entries created by the former kitchen form (`section: deal`, `category: Deal`, generated non-`deal-` IDs) are the kitchen's current service foods. Until staff reclassifies them in the admin, the customer homepage and order form present them under Today's Food for the current Africa/Gaborone day, and exclude them from the separate evergreen Deals list.
+- Stable `deal-` starter records remain under Deals. Explicit daily records continue to obey their weekday schedule. The same classification is shared by homepage and checkout so displayed sections match orderable foods.
