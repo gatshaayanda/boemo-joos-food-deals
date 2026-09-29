@@ -187,3 +187,9 @@ The next work should deepen reliability and business operations rather than add 
 ## Current-service menu placement correction (September 2026)
 - Legacy custom menu entries created by the former kitchen form (`section: deal`, `category: Deal`, generated non-`deal-` IDs) are the kitchen's current service foods. Until staff reclassifies them in the admin, the customer homepage and order form present them under Today's Food for the current Africa/Gaborone day, and exclude them from the separate evergreen Deals list.
 - Stable `deal-` starter records remain under Deals. Explicit daily records continue to obey their weekday schedule. The same classification is shared by homepage and checkout so displayed sections match orderable foods.
+
+
+## Deals and offers admin UX (September 2026)
+- Menu & Prices keeps one existing workflow but provides explicit `+ Today's food` and `+ Deal / offer` actions so kitchen staff do not have to remember which section selector to use.
+- The admin list is grouped into Today's Food and Deals & offers. Deal records can show an optional Bring-a-Friend price alongside the normal price.
+- Deals remain ordinary `menu` records with `section: deal`; no separate collection or checkout workflow is introduced. This keeps the change small and preserves the existing Firestore model. Firestore supports updating existing document fields without replacing the document, which fits this model. citeturn0search0
