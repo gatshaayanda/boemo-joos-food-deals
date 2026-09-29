@@ -126,7 +126,7 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 
 ## Menu publishing and financial reconciliation
 - Owner/staff can control public menu prices, Bring-a-Friend prices, availability, food photos, and whether an item belongs to Today's Food or the everyday/deal menu.
-- Today's Food is data-driven from `menu` items scheduled to specific weekdays. Keep the supplied weekly menu as a safe public fallback until the owner publishes daily items.
+- Today's Food is data-driven from `menu` items scheduled to specific weekdays. The supplied weekly menu may be shown only as an informational guide when the owner has not published today's priced items; it must never become orderable, seed Firestore, override owner edits, or invent prices. Published Firestore menu items remain the source of truth.
 - Food photos are uploaded by authorized admin users to Firebase Storage under `boemoMedia/`; do not expose arbitrary storage writes.
 - Orders preserve item/price snapshots. Payment collection is tracked separately from the sale: payment method, payment status, and amount actually recorded as received.
 - Financials are a daily reconciliation view: expected order sales, recorded payments by method, outstanding amounts, actual cash/e-transfer/other received, and variances. This is not a profit-and-loss report because BOEMO does not yet record food costs or other expenses.
