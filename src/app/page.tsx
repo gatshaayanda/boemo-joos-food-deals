@@ -3,14 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import {useEffect,useState} from "react";
 
-import {getBusinessSettings,getMenuItems,type MenuItem,type BusinessSettings} from "@/lib/firebase/data";
+import {getBusinessSettings,getMenuItems,readCachedMenuItems,type MenuItem,type BusinessSettings} from "@/lib/firebase/data";
 const heroImage="/boemo-assets/WhatsApp Image 2026-09-23 at 14.12.46.jpeg";
 const serviceImage="/boemo-assets/WhatsApp Image 2026-09-23 at 14.16.14.jpeg";
 
 export default function Home(){
  const today=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"Africa/Gaborone"}).format(new Date());
  const[firebaseMenu,setFirebaseMenu]=useState<MenuItem[]>([]),[settings,setSettings]=useState<BusinessSettings|null>(null),[menuUnavailable,setMenuUnavailable]=useState(false);
- useEffect(()=>{void Promise.all([getMenuItems(),getBusinessSettings()]).then(([items,currentSettings])=>{setFirebaseMenu(items);setSettings(currentSettings);setMenuUnavailable(false)}).catch(()=>setMenuUnavailable(true))},[]);
+ useEffect(()=>{void Promise.all([getMenuItems(),getBusinessSettings()]).then(([items,currentSettings])=>{setFirebaseMenu(items);setSettings(currentSettings);setMenuUnavailable(false)}).catch(()=>{const cached=readCachedMenuItems();if(cached.length){setFirebaseMenu(cached);setMenuUnavailable(false)}else setMenuUnavailable(true)})},[]);
  const legacyServiceItems=firebaseMenu.filter(item=>item.available&&item.section==="deal"&&item.category.trim().toLowerCase()==="deal"&&!item.id.startsWith("deal-"));
  const dynamicToday=[...firebaseMenu.filter(item=>item.available&&item.section==="daily"&&(item.days??[]).includes(today)),...legacyServiceItems];
  const weeklyMenu:Record<string,string>={Monday:"Ke Starch, Beetroot, Pumpkin, Chicken + Stew, Soup, Drink of Choice",Tuesday:"Samp & Stew",Wednesday:"Pap, Braai, Chicken, Morogo",Thursday:"Dumplings & Chicken",Friday:"Hot Dog & Fries"};

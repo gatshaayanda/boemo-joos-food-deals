@@ -54,7 +54,9 @@ export async function migrateLegacyDailyMenu():Promise<number>{
  return legacy.length;
 }
 
-export async function getMenuItems():Promise<MenuItem[]>{const snapshot=await getDocs(menuCollection);return snapshot.docs.map(item=>({id:item.id,...item.data() as Omit<MenuItem,"id">})).sort((a,b)=>a.sortOrder-b.sortOrder||a.name.localeCompare(b.name))}
+const MENU_CACHE_KEY="boemo-menu-cache-v2";
+export function readCachedMenuItems():MenuItem[]{if(typeof window==="undefined")return [];try{const raw=window.localStorage.getItem(MENU_CACHE_KEY);return raw?JSON.parse(raw) as MenuItem[]:[]}catch{return []}}
+export async function getMenuItems():Promise<MenuItem[]>{const snapshot=await getDocs(menuCollection);const items=snapshot.docs.map(item=>({id:item.id,...item.data() as Omit<MenuItem,"id">})).sort((a,b)=>a.sortOrder-b.sortOrder||a.name.localeCompare(b.name));try{if(typeof window!=="undefined")window.localStorage.setItem(MENU_CACHE_KEY,JSON.stringify(items))}catch{}return items}
 export async function saveMenuItem(item:MenuItem){await setDoc(doc(menuCollection,item.id),item)}
 export async function deleteMenuItem(id:string){await deleteDoc(doc(db,"menu",id))}
 export async function getBusinessSettings():Promise<BusinessSettings|null>{const snapshot=await getDoc(doc(settingsCollection,"main"));return snapshot.exists()?{id:snapshot.id,...snapshot.data() as Omit<BusinessSettings,"id">}:null}

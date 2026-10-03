@@ -193,3 +193,8 @@ The next work should deepen reliability and business operations rather than add 
 - Menu & Prices keeps one existing workflow but provides explicit `+ Today's food` and `+ Deal / offer` actions so kitchen staff do not have to remember which section selector to use.
 - The admin list is grouped into Today's Food and Deals & offers. Deal records can show an optional Bring-a-Friend price alongside the normal price.
 - Deals remain ordinary `menu` records with `section: deal`; no separate collection or checkout workflow is introduced. This keeps the change small and preserves the existing Firestore model. Firestore supports updating existing document fields without replacing the document, which fits this model.
+
+
+## Offline menu resilience checkpoint (October 2026)
+- Customer Home and Order pages cache the last successfully fetched Firestore menu in browser localStorage and use it when Firestore is temporarily unreachable/offline.
+- Firestore remains the source of truth; cache is only a resilience fallback and is refreshed after successful reads.
