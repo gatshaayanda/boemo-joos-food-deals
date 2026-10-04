@@ -248,3 +248,8 @@ The next work should deepen reliability and business operations rather than add 
 - The scheduled datetime minimum uses Africa/Gaborone time rather than the device's local timezone.
 - The order page keeps a visible summary of selected food and applied prices so customers can confirm what will be submitted before Place order.
 - Guest-first checkout, pickup/delivery, scheduled ordering, Bring-a-Friend pricing, account linking and tracking remain intact.
+
+
+## No-menu preorder recovery checkpoint (October 2026)
+- The customer Order page must not make an unpublished food day a dead end when a future daily menu is already published. Show the next published food day and a direct pre-order CTA inside the empty state.
+- This recovery action must derive only from published Firestore daily records and Africa/Gaborone calendar dates. It must never invent future food, prices or availability.
