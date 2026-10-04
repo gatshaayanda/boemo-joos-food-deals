@@ -241,3 +241,10 @@ The next work should deepen reliability and business operations rather than add 
 - Show important cost/offer information before submission. The customer should see regular price, offer price, and the resulting total rather than discovering the benefit only after ordering.
 - Do not add notification permission prompts as a prerequisite for ordering. Notifications remain an opt-in engagement layer until Firebase Cloud Messaging is implemented and tested.
 - Continue prioritizing practical repeat-use utility: today's menu, next food day, order-ahead, mobile-kitchen location/hours, scheduled pickup/delivery, order tracking, receipts, guest checkout and optional account history.
+
+
+## Order-ahead selection reliability checkpoint (October 2026)
+- Changing the scheduled date/time must never clear food the customer has already selected. Preserve the in-progress selection while the customer adjusts scheduling; do not make the customer rebuild a cart because a date/time field changed.
+- The scheduled datetime minimum uses Africa/Gaborone time rather than the device's local timezone.
+- The order page keeps a visible summary of selected food and applied prices so customers can confirm what will be submitted before Place order.
+- Guest-first checkout, pickup/delivery, scheduled ordering, Bring-a-Friend pricing, account linking and tracking remain intact.

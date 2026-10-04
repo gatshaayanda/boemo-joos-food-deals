@@ -122,3 +122,5 @@ h1 em{font-style:normal;color:var(--boemo-gold);text-shadow:0 0 22px rgba(255,20
 
 .accountBenefits{border-top:1px solid var(--boemo-line);padding-top:24px}.benefitGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.benefitGrid article{border:1px solid var(--boemo-line);border-radius:18px;padding:16px;background:#111112;display:grid;gap:7px}.benefitGrid strong{font-weight:950}.benefitGrid small{color:var(--boemo-muted);line-height:1.5}@media(max-width:700px){.benefitGrid{grid-template-columns:1fr}}
 @media(max-width:560px){.nextFoodCard{padding:18px}.dealCard{align-items:flex-start;gap:10px}.dealCard .dealPrice{flex:0 0 auto}.countdown{font-size:clamp(2.1rem,12vw,3.4rem)}}
+
+.orderSelectionSummary{display:grid;gap:.35rem;margin-top:1rem;padding:1rem;border:1px solid rgba(11,11,12,.12);border-radius:14px;background:#fffdf7}.orderSelectionSummary strong{font-size:.9rem}.orderSelectionSummary span{font-size:.82rem;color:#555}
