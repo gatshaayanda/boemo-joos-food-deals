@@ -9,17 +9,16 @@ const serviceImage="/boemo-assets/WhatsApp Image 2026-09-23 at 14.16.14.jpeg";
 
 export default function Home(){
  const today=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"Africa/Gaborone"}).format(new Date());
+ const[firebaseMenu,setFirebaseMenu]=useState<MenuItem[]>([]),[settings,setSettings]=useState<BusinessSettings|null>(null),[menuUnavailable,setMenuUnavailable]=useState(false);
  const [countdownNow,setCountdownNow]=useState(Date.now());
  useEffect(()=>{const timer=window.setInterval(()=>setCountdownNow(Date.now()),1000);return()=>window.clearInterval(timer)},[]);
- const gaboroneWeekdays=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
- const nextPublished=(()=>{for(let offset=1;offset<=7;offset++){const date=new Date(Date.now()+offset*86400000);const weekday=gaboroneWeekdays[date.getUTCDay()];if(firebaseMenu.some(item=>item.available&&item.section==="daily"&&(item.days??[]).includes(weekday))){const target=new Date();target.setHours(0,0,0,0);target.setDate(target.getDate()+offset);return {weekday,date:target};}}return null})();
+ const nextPublished=(()=>{for(let offset=1;offset<=7;offset++){const date=new Date();date.setDate(date.getDate()+offset);const weekday=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"Africa/Gaborone"}).format(date);if(firebaseMenu.some(item=>item.available&&item.section==="daily"&&(item.days??[]).includes(weekday))){const target=new Date();target.setHours(0,0,0,0);target.setDate(target.getDate()+offset);return {weekday,date:target};}}return null})();
  const countdownTarget=nextPublished?.date.getTime()??0;
  const countdownMs=Math.max(0,countdownTarget-countdownNow);
  const countdownDays=Math.floor(countdownMs/86400000);
  const countdownHours=Math.floor((countdownMs%86400000)/3600000);
  const countdownMinutes=Math.floor((countdownMs%3600000)/60000);
  const countdownSeconds=Math.floor((countdownMs%60000)/1000);
- const[firebaseMenu,setFirebaseMenu]=useState<MenuItem[]>([]),[settings,setSettings]=useState<BusinessSettings|null>(null),[menuUnavailable,setMenuUnavailable]=useState(false);
  useEffect(()=>{void Promise.all([getMenuItems(),getBusinessSettings()]).then(([items,currentSettings])=>{setFirebaseMenu(items);setSettings(currentSettings);setMenuUnavailable(false)}).catch(()=>{const cached=readCachedMenuItems();if(cached.length){setFirebaseMenu(cached);setMenuUnavailable(false)}else setMenuUnavailable(true)})},[]);
  const legacyServiceItems=firebaseMenu.filter(item=>item.available&&item.section==="deal"&&item.category.trim().toLowerCase()==="deal"&&!item.id.startsWith("deal-"));
  const dynamicToday=[...firebaseMenu.filter(item=>item.available&&item.section==="daily"&&(item.days??[]).includes(today)),...legacyServiceItems];
