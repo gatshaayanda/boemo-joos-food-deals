@@ -276,3 +276,8 @@ The next work should deepen reliability and business operations rather than add 
 - The Firebase scheduled-function wrapper remains in `functions/index.js` as a future native Firebase scheduler option, but BOEMO production reminder delivery does not require the Blaze plan.
 - The GitHub Actions workflow has a manual `workflow_dispatch` path for verification. Production reminders are considered operational only after the repository secret is present, a manual run completes successfully, and an actual test notification is received.
 - The public Firebase Web Push/VAPID key remains client-side configuration and is not a secret.
+
+
+## Customer order recovery checkpoint (October 2026)
+- If a tracking lookup returns no live Firestore document but a same-device order snapshot exists, show that private snapshot instead of replacing it with an "order not found" dead end.
+- The tracking page must distinguish a missing live record from a temporarily unavailable live read. Never discard a valid local customer recovery path.
