@@ -4,6 +4,7 @@ import {useEffect,useMemo,useState} from "react";
 import {getDownloadURL,ref,uploadBytes} from "firebase/storage";
 import AdminGate from "@/app/admin/admin-gate";
 import {storage} from "@/lib/firebase/client";
+import NotificationSettings from "@/components/NotificationSettings";
 import {deleteMenuItem,ensureStarterMenuSeeded,getBusinessSettings,getDailyReconciliation,getFoodOrders,getMenuItems,saveBusinessSettings,saveDailyReconciliation,saveMenuItem,subscribeToBusinessSettings,subscribeToFoodOrders,subscribeToMenuItems,updateFoodOrderPayment,updateFoodOrderStatus,ORDER_STATUSES,type BusinessSettings,type DailyReconciliation,type FoodOrder,type MenuItem,type OrderStatus,type PaymentMethod,type PaymentStatus} from "@/lib/firebase/data";
 
 const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
