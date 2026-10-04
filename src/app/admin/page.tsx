@@ -7,7 +7,10 @@ import {storage} from "@/lib/firebase/client";
 import {deleteMenuItem,ensureStarterMenuSeeded,getBusinessSettings,getDailyReconciliation,getFoodOrders,getMenuItems,saveBusinessSettings,saveDailyReconciliation,saveMenuItem,subscribeToBusinessSettings,subscribeToFoodOrders,subscribeToMenuItems,updateFoodOrderPayment,updateFoodOrderStatus,ORDER_STATUSES,type BusinessSettings,type DailyReconciliation,type FoodOrder,type MenuItem,type OrderStatus,type PaymentMethod,type PaymentStatus} from "@/lib/firebase/data";
 
 const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-const GABORONE_TIME_ZONE="Africa/Gaborone";\nconst gaboroneDateKey=(date=new Date())=>new Intl.DateTimeFormat("en-CA",{timeZone:GABORONE_TIME_ZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(date);\nconst gaboroneWeekday=(date=new Date())=>new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:GABORONE_TIME_ZONE}).format(date);\nconst gaboroneDateTime=(iso:string)=>new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:GABORONE_TIME_ZONE}).format(new Date(iso));
+const GABORONE_TIME_ZONE="Africa/Gaborone";
+const gaboroneDateKey=(date=new Date())=>new Intl.DateTimeFormat("en-CA",{timeZone:GABORONE_TIME_ZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(date);
+const gaboroneWeekday=(date=new Date())=>new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:GABORONE_TIME_ZONE}).format(date);
+const gaboroneDateTime=(iso:string)=>new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:GABORONE_TIME_ZONE}).format(new Date(iso));
 const money=(n:number)=>`P${n.toFixed(2)}`;
 const currentDay=gaboroneWeekday();
 const blankMenu:MenuItem={id:"",name:"",price:0,friendPrice:undefined,category:"Today",description:"",available:true,preparationMinutes:15,sortOrder:0,section:"daily",days:[currentDay]};
