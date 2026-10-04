@@ -307,3 +307,9 @@ The next work should deepen reliability and business operations rather than add 
 - BOEMO pickup reminder times are Africa/Gaborone times. New `scheduledFor` values are stored with an explicit `+02:00` offset. The free GitHub Actions reminder runner must parse legacy timezone-less values as Africa/Gaborone and query in Gaborone local-string space.
 - Vercel limits are not the reminder scheduler: pickup reminders run through GitHub Actions → Firebase Admin/FCM. Do not diagnose a missed reminder as a Vercel limit without evidence.
 - Push notifications require HTTPS, browser permission, a valid FCM web push registration/token and a service worker. Keep notification permission optional; ordering must never depend on it.
+
+
+## Checkpoint: pickup reminder debugging
+- Reminder runner is scheduled through GitHub Actions in Africa/Gaborone time.
+- Runner logs the reminder matching window, candidate count, and final orders/reminders/sent summary for production debugging.
+- Customer pickup notifications support both background service-worker display and foreground BOEMO handling.
