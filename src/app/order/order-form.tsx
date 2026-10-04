@@ -19,7 +19,7 @@ export default function OrderForm(){
    let customer=user;
    if(!customer){try{customer=(await signInAnonymously(auth)).user}catch(authError){console.warn("BOEMO anonymous auth unavailable",authError);customer=null}}
    const order={...(customer?{customerId:customer.uid}:{}),createdAt:new Date().toISOString(),customerName:name,phone,mode,scheduledFor,deliveryLocation,instructions,items:selected.map(({name,price,quantity})=>({name,price,quantity})),total,status:"New" as const};
-   const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);
+   const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);try{window.localStorage.setItem(`boemo-order-${id}`,JSON.stringify({...order,id}))}catch{}
    // Customer profile persistence is a convenience, never a reason to reject an order.
    // Firestore may deny/read-fail an empty profile while the order write itself is valid.
    if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false)}
