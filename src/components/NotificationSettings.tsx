@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {onAuthStateChanged} from "firebase/auth";
-import {getToken} from "firebase/messaging";
+import {getToken,onMessage} from "firebase/messaging";
 import {auth} from "@/lib/firebase/client";
 import {getNotificationPreferences,isAdminUser,saveNotificationPreferences,saveNotificationToken,type NotificationPreferences} from "@/lib/firebase/data";
 import {getMessagingInstance} from "@/lib/firebase/notifications";
