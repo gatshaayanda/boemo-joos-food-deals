@@ -281,3 +281,11 @@ The next work should deepen reliability and business operations rather than add 
 ## Customer order recovery checkpoint (October 2026)
 - If a tracking lookup returns no live Firestore document but a same-device order snapshot exists, show that private snapshot instead of replacing it with an "order not found" dead end.
 - The tracking page must distinguish a missing live record from a temporarily unavailable live read. Never discard a valid local customer recovery path.
+
+
+## Account and tracking recovery checkpoint (October 2026)
+- Firebase Auth production configuration has been verified: the Vercel hostname is authorized and Google + Anonymous providers are enabled. Do not show the old Firebase setup warning as the default account message.
+- Google auth errors must be mapped to the actual Firebase error (cancelled popup, blocked popup, existing credential, already-linked provider, etc.).
+- If an anonymous guest links Google from the order-tracking page, the tracking view must react to the auth-state change and immediately re-attempt the live order read/subscription for the same order.
+- BOEMO order tracking stays private to the authenticated customer UID or authorized kitchen staff. Unlike a deliberately shareable Namane job link, BOEMO tracking links must not become publicly readable just for convenience.
+- The same-device local order snapshot is a recovery layer, not an authorization bypass and not a substitute for live Firestore ownership checks.
