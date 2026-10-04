@@ -248,3 +248,8 @@ The next work should deepen reliability and business operations rather than add 
 - The scheduled datetime minimum uses Africa/Gaborone time rather than the device's local timezone.
 - The order page keeps a visible summary of selected food and applied prices so customers can confirm what will be submitted before Place order.
 - Guest-first checkout, pickup/delivery, scheduled ordering, Bring-a-Friend pricing, account linking and tracking remain intact.
+
+
+## Customer order recovery checkpoint (October 2026)
+- If a tracking lookup returns no live Firestore document but a same-device order snapshot exists, show that private snapshot instead of replacing it with an "order not found" dead end.
+- The tracking page must distinguish a missing live record from a temporarily unavailable live read. Never discard a valid local customer recovery path.
