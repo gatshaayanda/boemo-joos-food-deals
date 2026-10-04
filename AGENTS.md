@@ -313,3 +313,9 @@ The next work should deepen reliability and business operations rather than add 
 - Reminder runner is scheduled through GitHub Actions in Africa/Gaborone time.
 - Runner logs the reminder matching window, candidate count, and final orders/reminders/sent summary for production debugging.
 - Customer pickup notifications support both background service-worker display and foreground BOEMO handling.
+
+
+## Save-state UX checkpoint (October 2026)
+- Admin save confirmations must be visible at the point of action, not only as a message at the top of a long page. Use an immediate button/loading state plus persistent inline confirmation so staff can tell the save completed without scrolling.
+- Successful settings/menu/reconciliation saves should leave the saved values visible in the current view. Error feedback must remain equally visible and must never imply a backend-confirmed save when the write failed.
+- Pickup reminder parsing treats timezone-less legacy datetime-local order values as Africa/Gaborone; new scheduled orders already store an explicit +02:00 offset.
