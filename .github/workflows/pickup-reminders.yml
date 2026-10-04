@@ -3,6 +3,7 @@ name: BOEMO pickup reminders
 on:
   schedule:
     - cron: "*/5 * * * *"
+      timezone: "Africa/Gaborone"
   workflow_dispatch:
 
 permissions:
