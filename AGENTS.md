@@ -198,3 +198,11 @@ The next work should deepen reliability and business operations rather than add 
 ## Offline menu resilience checkpoint (October 2026)
 - Customer Home and Order pages cache the last successfully fetched Firestore menu in browser localStorage and use it when Firestore is temporarily unreachable/offline.
 - Firestore remains the source of truth; cache is only a resilience fallback and is refreshed after successful reads.
+
+
+## Customer UX reliability checkpoint (October 2026)
+- Deal cards explicitly show the admin-controlled regular price and Bring-a-Friend price when friendPrice exists; this is presentation only and never invents a friend price.
+- Order confirmation stores a same-device order snapshot in browser localStorage as a private resilience fallback. It does not replace Firestore authorization or expose orders publicly.
+- Order tracking uses the authenticated guest session for live Firestore access, while the same-device snapshot can prevent a confusing blank/error screen when that session is temporarily unavailable.
+- The service-worker shell version is bumped when customer-facing code changes so installed PWAs can detect and activate the new shell.
+- Google sign-in still requires the production Vercel hostname to be an authorized Firebase Authentication domain and Google to be enabled as a provider; this is a Firebase Console setting, not an application-code setting.
