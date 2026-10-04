@@ -297,3 +297,13 @@ The next work should deepen reliability and business operations rather than add 
 - BOEMO pickup reminders are independent scheduled notifications. They are based on the customer's scheduled pickup time and saved notification preference, not on an admin changing order status.
 - The reminder runner uses a six-minute delivery window around each five-minute GitHub Actions run and runs on Africa/Gaborone time. Duplicate delivery records prevent repeat sends.
 - Order tracking remains private to the authenticated customer UID/guest session; never turn BOEMO order URLs into public readable share links like Namane tracked jobs.
+
+
+## Customer engagement and notification checkpoint (October 2026)
+- My BOEMO is a customer dashboard, not a settings-only page. It includes a private live activity feed built from the customer's own orders, with totals, active/completed order moments, tracking links and a clear next action.
+- The customer feed must never expose another customer's activity. Firestore `onSnapshot()` may stream only orders matching the authenticated customer's UID.
+- Engagement should remain useful rather than gamified noise: order progress, completed-order history, upcoming action, pickup reminders and easy return-to-order are preferred over fake social activity, arbitrary points or invented rewards.
+- Restaurant UX research supports order history, easy reordering/return paths, personalized offers and relevant push notifications as retention mechanisms; BOEMO must keep any financial reward owner-controlled and must not promise unimplemented loyalty benefits.
+- BOEMO pickup reminder times are Africa/Gaborone times. New `scheduledFor` values are stored with an explicit `+02:00` offset. The free GitHub Actions reminder runner must parse legacy timezone-less values as Africa/Gaborone and query in Gaborone local-string space.
+- Vercel limits are not the reminder scheduler: pickup reminders run through GitHub Actions → Firebase Admin/FCM. Do not diagnose a missed reminder as a Vercel limit without evidence.
+- Push notifications require HTTPS, browser permission, a valid FCM web push registration/token and a service worker. Keep notification permission optional; ordering must never depend on it.
