@@ -10,6 +10,7 @@ function weekdayForDate(dateKey:string){return new Intl.DateTimeFormat("en-US",{
 function addGaboroneDays(dateKey:string,offset:number){const date=new Date(`${dateKey}T12:00:00`);date.setUTCDate(date.getUTCDate()+offset);return `${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,"0")}-${String(date.getUTCDate()).padStart(2,"0")}`}
 function orderUnitPrice(item:MenuItem,quantity:number){return item.friendPrice!==undefined&&quantity>=2?item.friendPrice:item.price}
 function gaboroneNowInput(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Gaborone",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const get=(type:string)=>parts.find(p=>p.type===type)?.value??"";return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`}
+function gaboroneScheduledIso(value:string){return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)?value+":00+02:00":value}
 export default function OrderForm(){
  const today=gaboroneDateKey();
  const[menu,setMenu]=useState<MenuItem[]>([]),[menuLoaded,setMenuLoaded]=useState(false),[menuUnavailable,setMenuUnavailable]=useState(false);
@@ -33,7 +34,7 @@ export default function OrderForm(){
 }
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(busy)return;if(!selected.length){setError(menuUnavailable||!visibleMenu.length?"No menu items are currently published for this date. Choose another published date or call BOEMO on 76425849 / 76769834.":"Choose at least one food item.");return}if(unavailableSelected.length){setError("One or more selected items are not published for "+weekdayForDate(selectedDate)+". Remove them or choose a date when they are available.");return}setBusy(true);setError("");
-  const form=new FormData(event.currentTarget),name=String(form.get("customerName")??"").trim(),phone=String(form.get("phone")??"").trim(),mode=String(form.get("mode")??"pickup") as "pickup"|"delivery",scheduledFor=String(form.get("scheduledFor")??""),deliveryLocation=String(form.get("deliveryLocation")??"").trim(),instructions=String(form.get("instructions")??"").trim();
+  const form=new FormData(event.currentTarget),name=String(form.get("customerName")??"").trim(),phone=String(form.get("phone")??"").trim(),mode=String(form.get("mode")??"pickup") as "pickup"|"delivery",scheduledInput=String(form.get("scheduledFor")??""),scheduledFor=gaboroneScheduledIso(scheduledInput),deliveryLocation=String(form.get("deliveryLocation")??"").trim(),instructions=String(form.get("instructions")??"").trim();
   if(!name||!phone||!scheduledFor){setError("Please add your name, phone and preferred time.");setBusy(false);return}
   if(mode==="delivery"&&!deliveryLocation){setError("Add your delivery location or landmark.");setBusy(false);return}
   try{
