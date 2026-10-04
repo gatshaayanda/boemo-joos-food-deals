@@ -18,6 +18,7 @@ service cloud.firestore {
     }
 
     function validOrder() {
+      // Every customer order must belong to a Firebase Auth session. Guests use Anonymous Auth; this is still authentication, not a sign-in requirement.
       return request.resource.data.keys().hasOnly([
           'customerId',
           'createdAt',
@@ -123,10 +124,8 @@ service cloud.firestore {
 
     match /orders/{orderId} {
       allow create: if validOrder()
-        && (
-          !request.resource.data.keys().hasAny(['customerId'])
-          || isOwner(request.resource.data.customerId)
-        );
+        && request.resource.data.keys().hasAll(['customerId'])
+        && isOwner(request.resource.data.customerId);
 
       allow read: if isAdmin()
         || (
