@@ -39,3 +39,6 @@ npm run lint
 npm run build
 
 See AGENTS.md for the implementation contract.
+
+## Pickup notifications
+Customer and kitchen pickup reminders are implemented with Firebase Cloud Messaging and a scheduled Firebase function. Before production delivery is enabled, generate a Firebase Web Push/VAPID key under Firebase Console → Project settings → Cloud Messaging → Web Push certificates and set `NEXT_PUBLIC_FIREBASE_VAPID_KEY` in the BOEMO deployment. Deploy the Firebase functions with `firebase deploy --only functions,firestore:indexes` on the BOEMO Firebase project; scheduled functions require the Firebase Blaze plan. The app asks for notification permission only from the user's explicit settings action and supports 5, 10, 15, 20, 30, 45 and 60 minute pickup reminders.
