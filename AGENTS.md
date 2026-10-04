@@ -56,6 +56,16 @@ Wednesday: Pap, Braai, Chicken, Morogo
 Thursday: Dumplings & Chicken
 Friday: Hot Dog & Fries
 
+Supplied deals:
+Beggar & Chips P30 / Bring a Friend P25
+Hot Dog P25 / Bring a Friend P20
+Potatoes P10
+Cup Drink P8 / Bring a Friend 2 for P15
+Still Water P7 / Bring a Friend 2 for P10
+Sausage & Chips P30
+Combo Sausage + Chips + Drink P40
+Beggar + Chips + Drink P40
+
 ## Ordering
 Orders preserve item and price snapshots.
 Modes: pickup or delivery.
@@ -75,7 +85,7 @@ Maintain installable manifest, service worker, offline route, public app-shell c
 BOEMO must use its own dedicated Firebase project. Never reuse another application's identifiers, credentials, collections, seed data or rules. Browser config uses NEXT_PUBLIC_FIREBASE_* only.
 
 ## Firestore boundary
-Public customers may create validated orders. Authenticated customers may access only their own `customers/{uid}` profile and associated orders. `admins/{uid}.role` owner/staff may read/update operational orders and manage future menu/business settings. Never expose customer profiles publicly or weaken rules to hide UI/configuration problems.
+Public customers may create validated orders. Authenticated customers may access only their own `customers/{uid}` profile and associated orders. admins/{uid}.role owner/staff may read/update operational orders and manage future menu/business settings. Never expose customer profiles publicly or weaken rules to hide UI/configuration problems.
 
 Never weaken rules to hide UI/configuration problems.
 
@@ -84,7 +94,7 @@ Never weaken rules to hide UI/configuration problems.
 
 The admin gate accepts Google or Email/Password Firebase users, but access is granted only when `admins/{uid}.role` is `owner` or `staff`. The first owner must be bootstrapped in Firebase Console; never hard-code an admin UID into the app.
 
-The public home and customer order page use the Firestore `menu` collection as the source of truth. The first authorized Kitchen load seeds the supplied starter menu with stable IDs; owner/staff can then CRUD those same records. Do not reintroduce hard-coded menu/deal fallbacks. If no menu is published or the menu cannot be loaded, show the BOEMO phone fallback (76425849 / 76769834) rather than stale prices. Starter daily meals whose prices were not supplied remain unpublished until the owner enters the real price and makes them available. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
+The public home and customer order page use the Firestore `menu` collection as the source of truth. The first authorized Kitchen load seeds the supplied starter menu into Firestore with stable IDs; owner/staff can then CRUD those same records. Do not reintroduce hard-coded menu/deal fallbacks. If no menu is published or the menu cannot be loaded, show the BOEMO phone fallback (76425849 / 76769834) rather than stale prices. Starter daily meals whose prices were not supplied remain unpublished until the owner enters the real price and makes them available. An online order failure must be surfaced as an online/Firebase error; do not mislabel an online write timeout as an offline save.
 
 ## Media
 Use supplied BOEMO food assets under public/boemo-assets/. Do not use inherited Namane assets as BOEMO content.
@@ -102,7 +112,6 @@ Do not run npm audit fix --force blindly. Never commit private credentials.
 
 ## Checkpoint
 Review the actual diff before committing. Commit meaningful checkpoints. Avoid unnecessary Vercel deployments.
-
 ## Firebase Authentication deployment contract
 - BOEMO's production Vercel hostname is `boemo-joos-food-deals.vercel.app` and must be present in Firebase Authentication → Settings → Authorized domains. Google sign-in cannot be repaired in application code when Firebase returns `auth/unauthorized-domain`; this is a live Firebase project setting.
 - The Firebase project's default auth domain is `boemo-joos-food-deals.firebaseapp.com`. Keep that project identity in the deployed `NEXT_PUBLIC_FIREBASE_*` configuration.
@@ -123,13 +132,16 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - Financials are a daily reconciliation view: expected order sales, recorded payments by method, outstanding amounts, actual cash/e-transfer/other received, and variances. This is not a profit-and-loss report because BOEMO does not yet record food costs or other expenses.
 - Do not mark an order paid merely because it was submitted. The kitchen records payment when cash or an e-transfer is actually received.
 
+
+
 ## Menu-entry UX checkpoint (September 2026)
 - The public home separates `section: "daily"` + today's `days` from `section: "deal"` items. New kitchen menu entries default to Today's Food for the current Botswana day, rather than silently landing in Deals.
 - Existing edits preserve their stored section/days. An item previously saved as a Deal must be edited and switched to Today's Food; code must not silently reinterpret an existing Deal as today's meal.
 - New menu-entry defaults use Africa/Gaborone so the kitchen's current day matches the public customer's day.
 
+
 ## Legacy menu correction checkpoint (September 2026)
-- A one-time authorized-kitchen migration corrects legacy custom items that were saved by the old New Item form as `section: deal`, `category: Deal`, and an auto-generated ID, but only when today's published daily section is empty.
+- A one-time authorized-kitchen migration converts legacy custom items that were saved by the old New Item form as `section: deal`, `category: Deal`, and an auto-generated ID into Today's Food for the current Africa/Gaborone day, but only when today's published daily section is empty.
 - Starter deal records with stable `deal-` IDs are never migrated. The migration writes a marker so it cannot repeatedly reinterpret future menu edits.
 - This protects the customer's existing starter deals while correcting the specific old-form mistake that put newly entered food under Deals.
 
@@ -140,7 +152,7 @@ Review the actual diff before committing. Commit meaningful checkpoints. Avoid u
 - The PWA service worker caches the public app shell plus /account and /admin. Private Firestore data is not copied into the service-worker cache; Firebase's own Firestore persistence handles authenticated/offline data.
 - Firebase Storage admin access must recognize the same owner/staff roles as Firestore, including the currently used capitalized Owner/Staff values.
 - Food photos are public-read and admin-write under boemoMedia/, with image-only uploads and a 12 MB per-file limit.
-- Browser push notifications use Firebase Cloud Messaging, explicit notification permission, and the BOEMO service worker. They are opt-in and must never block ordering.
+- Browser push notifications are a later phase. Firebase Cloud Messaging for Web requires HTTPS, notification permission and a service-worker/token setup; do not promise push notifications until that infrastructure is implemented and tested.
 
 ## Security and data integrity guardrails
 - Firestore rules are part of the source-of-truth repository, but changing firestore.rules or storage.rules in GitHub does not by itself deploy them to Firebase. Treat Firebase Rules deployment as a separate checkpoint and verify the live Rules tab after deployment.
@@ -161,29 +173,33 @@ BOEMO is now a working small-business operations PWA foundation:
 7. PDF receipts and printing;
 8. realtime kitchen queue and order status/payment recording;
 9. daily cash/e-transfer/other reconciliation;
-10. installable/offline shell and Firestore offline persistence;
-11. opt-in pickup push notification settings for customers and kitchen staff.
+10. installable/offline shell and Firestore offline persistence.
 
 The next work should deepen reliability and business operations rather than add unrelated features.
+
 
 ## BOEMO commercial offer — September 2026
 - Existing BOEMO monthly food-subscription offer: **P600 per month**, covering Monday through Sunday.
 - Exact subscription entitlement, meal-selection rules, pickup/delivery treatment, payment/renewal workflow and cancellation rules are not yet defined in the app; do not invent them or advertise online subscription checkout until those rules are agreed and implemented.
 - Primary contact for the subscription offer: **76425849**.
 
+
 ## Current-service menu placement correction (September 2026)
 - Legacy custom menu entries created by the former kitchen form (`section: deal`, `category: Deal`, generated non-`deal-` IDs) may be treated as current service foods by the customer homepage/order form for compatibility with historical kitchen data.
 - This is a compatibility presentation rule, not permission to rewrite Firestore records. Automatic legacy migration is disabled. Staff must deliberately reclassify a record in the admin when its stored section/day is wrong.
 - Stable `deal-` starter records remain under Deals. Explicit daily records continue to obey their weekday schedule. A published `friendPrice` also makes an item eligible for the customer Deals presentation so an offer is not silently lost just because an older record was reclassified as daily.
 
+
 ## Deals and offers admin UX (September 2026)
 - Menu & Prices keeps one existing workflow but provides explicit `+ Today's food` and `+ Deal / offer` actions so kitchen staff do not have to remember which section selector to use.
 - The admin list is grouped into Today's Food and Deals & offers. Deal records can show an optional Bring-a-Friend price alongside the normal price.
-- Deals remain ordinary `menu` records with `section: deal`; no separate collection or checkout workflow is introduced. This keeps the change small and preserves the existing Firestore model.
+- Deals remain ordinary `menu` records with `section: deal`; no separate collection or checkout workflow is introduced. This keeps the change small and preserves the existing Firestore model. Firestore supports updating existing document fields without replacing the document, which fits this model.
+
 
 ## Offline menu resilience checkpoint (October 2026)
 - Customer Home and Order pages cache the last successfully fetched Firestore menu in browser localStorage and use it when Firestore is temporarily unreachable/offline.
 - Firestore remains the source of truth; cache is only a resilience fallback and is refreshed after successful reads.
+
 
 ## Customer UX reliability checkpoint (October 2026)
 - Deal cards explicitly show the admin-controlled regular price and Bring-a-Friend price when friendPrice exists; this is presentation only and never invents a friend price.
@@ -192,6 +208,7 @@ The next work should deepen reliability and business operations rather than add 
 - The service-worker shell version is bumped when customer-facing code changes so installed PWAs can detect and activate the new shell.
 - Google sign-in still requires the production Vercel hostname to be an authorized Firebase Authentication domain and Google to be enabled as a provider; this is a Firebase Console setting, not an application-code setting.
 
+
 ## Customer food-day / preorder UX (October 2026)
 - When no Today's Food is published, the homepage should not dead-end. If a future Africa/Gaborone daily menu item is published, show a live countdown to that next food day and a direct pre-order CTA.
 - Pre-ordering must use the same Firestore menu source of truth. The order screen accepts a future date and shows the daily items published for that weekday plus evergreen deals; it must never invent future food or prices.
@@ -199,19 +216,21 @@ The next work should deepen reliability and business operations rather than add 
 - Google sign-in controls retain Google branding; BOEMO styling belongs around the control, not inside the Google-branded action itself.
 - Firebase Firestore rules must require a customerId tied to the authenticated guest/customer UID on order creation. Do not fall back to unauthenticated order creation.
 
+
 ## Account-holder loyalty and priority direction (October 2026)
 - Google account connection is an optional upgrade from the anonymous guest identity. Firebase supports linking the credential to the existing anonymous user so the same BOEMO UID can retain the customer's profile/order association.
 - A connected BOEMO account may become eligible for owner-controlled member benefits: occasional discounts, exclusive specials, early access, loyalty rewards, and priority handling of advance requests. Benefits are not automatic promises and may vary by offer, capacity, margin and kitchen decision.
 - Priority handling can extend beyond ordinary food orders to larger advance requests and catering/event enquiries. This is a service priority, not a guarantee of availability or acceptance.
 - Keep loyalty simple and useful. Current restaurant research supports exclusive offers, personalized rewards and early access, while also emphasizing that rewards should be easy to understand and worthwhile.
 - Do not let the customer client calculate or self-award a discount. Any financial benefit must remain owner-controlled and be applied/recorded through the kitchen workflow so the browser cannot grant itself money off.
-- Do not make Google connection or marketing notifications a prerequisite for ordering. Order-status communication and promotional/member communications are separate permissions. Browser push is opt-in and separate from ordering.
+- Do not make Google connection or marketing notifications a prerequisite for ordering. Order-status communication and promotional/member communications are separate permissions. Browser push is still a later phase until Firebase Cloud Messaging infrastructure is implemented and tested.
 - Account copy should explain the exchange clearly: connecting an account can preserve history and make the customer eligible for member-only/priority benefits; notification preferences should remain opt-in and understandable.
 
 ## Menu integrity checkpoint (October 2026)
 - Automatic legacy menu migration has been disabled. A menu item saved as a Deal must never be silently moved into Today's Food based on the day the admin page happens to open.
 - This matters for Bring-a-Friend offers: the homepage already renders `friendPrice` for published deal records, so a deal being reclassified as daily can make it disappear from Special Deals without the homepage renderer being the root cause.
 - Existing Firestore records are not rewritten automatically. Any historical record that was already reclassified must be inspected and repaired deliberately from its stored data; do not infer its original section or day.
+
 
 ## Everyday conversion / utility checkpoint (October 2026)
 - The homepage is a daily utility surface, not only a brochure: when today's food exists, it also shows the next published food day and a live Africa/Gaborone countdown with a direct order-ahead CTA.
@@ -220,14 +239,16 @@ The next work should deepen reliability and business operations rather than add 
 - Bring-a-Friend pricing is now actionable in checkout: when a customer orders 2+ units of an item with `friendPrice`, checkout applies that lower per-person price and stores the applied unit price in the order. The customer must see that the offer is active.
 - Keep guest ordering prominent. Customer research consistently finds forced account creation and hidden guest checkout create avoidable abandonment; BOEMO should preserve ordering without authentication while keeping optional My BOEMO/account benefits separate.
 - Show important cost/offer information before submission. The customer should see regular price, offer price, and the resulting total rather than discovering the benefit only after ordering.
-- Do not add notification permission prompts as a prerequisite for ordering. Notifications are an opt-in engagement layer.
+- Do not add notification permission prompts as a prerequisite for ordering. Notifications remain an opt-in engagement layer until Firebase Cloud Messaging is implemented and tested.
 - Continue prioritizing practical repeat-use utility: today's menu, next food day, order-ahead, mobile-kitchen location/hours, scheduled pickup/delivery, order tracking, receipts, guest checkout and optional account history.
+
 
 ## Order-ahead selection reliability checkpoint (October 2026)
 - Changing the scheduled date/time must never clear food the customer has already selected. Preserve the in-progress selection while the customer adjusts scheduling; do not make the customer rebuild a cart because a date/time field changed.
 - The scheduled datetime minimum uses Africa/Gaborone time rather than the device's local timezone.
 - The order page keeps a visible summary of selected food and applied prices so customers can confirm what will be submitted before Place order.
 - Guest-first checkout, pickup/delivery, scheduled ordering, Bring-a-Friend pricing, account linking and tracking remain intact.
+
 
 ## No-menu preorder recovery checkpoint (October 2026)
 - The customer Order page must not make an unpublished food day a dead end when a future daily menu is already published. Show the next published food day and a direct pre-order CTA inside the empty state.
@@ -240,9 +261,18 @@ The next work should deepen reliability and business operations rather than add 
 - Guest checkout remains intact. After a successful order, the same authenticated guest session is offered notification settings so a guest can enable pickup reminders without creating a Google account.
 - Device registration tokens are stored privately under the authenticated user's notification token path. Firestore rules must never expose another user's tokens.
 - Background delivery uses Firebase Cloud Messaging and the existing BOEMO service worker so notifications can arrive when the PWA is not open. FCM web push requires HTTPS and a Firebase Web Push/VAPID public key.
-- The production scheduler is GitHub Actions every 5 minutes, not Vercel Cron or Firebase Cloud Scheduler. This avoids requiring Vercel Pro or the Firebase Blaze plan for reminder scheduling.
-- The GitHub Actions workflow `.github/workflows/pickup-reminders.yml` runs `functions/pickup-reminder-runner.js` using the encrypted repository secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
-- The runner uses a 4-minute timing window because a GitHub scheduled run can be delayed; `notificationDeliveries` prevents duplicate sends.
-- The Firebase scheduled-function wrapper remains in `functions/index.js` as a future native option, but it is not the production scheduler while BOEMO remains on Spark.
-- Production reminder delivery is considered live only after the repository secret exists, the manual workflow run succeeds, and a real test notification is received.
-- Never commit or print the service-account JSON. The Firebase Web Push/VAPID public key is public client configuration and is not a secret.
+- Reminder scheduling is a Firebase Cloud Function using Cloud Scheduler, not Vercel Cron. This matters because the current Vercel Hobby plan does not provide minute-level Cron precision.
+- The scheduled function targets pickup orders and sends to the customer plus opted-in admin devices at each recipient's chosen lead time. Delivery/collected/cancelled orders are not reminded.
+- Firebase scheduled functions require the Firebase project to use the Blaze plan. The app code can be pushed independently, but production reminder delivery is not considered live until the scheduled function is deployed and the Firebase Web Push public key is configured.
+
+
+## Free pickup reminder scheduler checkpoint (October 2026)
+- Production pickup reminders now use the public-repository GitHub Actions scheduler every 5 minutes instead of depending on Firebase Cloud Scheduler/Blaze or Vercel Cron.
+- The workflow is `.github/workflows/pickup-reminders.yml`. It runs the reusable `functions/pickup-reminder-runner.js` with Firebase Admin credentials supplied through the encrypted repository secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
+- Never commit, print, or paste the Firebase service-account JSON into source control or chat. The GitHub secret is the only production credential input for the reminder runner.
+- The runner reads the existing `orders`, `notificationPreferences`, `notificationTokens` and `admins` collections and sends FCM web push through the existing service worker.
+- The scheduler runs every 5 minutes. Reminder delivery is therefore approximate rather than second-perfect; the runner uses a 4-minute matching window and an idempotent `notificationDeliveries` marker so the same recipient/lead/order reminder is not repeatedly sent.
+- Supported lead times remain 5, 10, 15, 20, 30, 45 and 60 minutes. Cancelled, collected and delivered orders are skipped.
+- The Firebase scheduled-function wrapper remains in `functions/index.js` as a future native Firebase scheduler option, but BOEMO production reminder delivery does not require the Blaze plan.
+- The GitHub Actions workflow has a manual `workflow_dispatch` path for verification. Production reminders are considered operational only after the repository secret is present, a manual run completes successfully, and an actual test notification is received.
+- The public Firebase Web Push/VAPID key remains client-side configuration and is not a secret.
