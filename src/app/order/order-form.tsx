@@ -28,7 +28,7 @@ export default function OrderForm(){
   try{
    let customer=user;
    if(!customer)customer=(await signInAnonymously(auth)).user
-   const order={customerId:customer.uid,createdAt:new Date().toISOString(),customerName:name,phone,mode,scheduledFor,deliveryLocation,instructions,items:selected.map(({name,price,quantity})=>({name,price:orderUnitPrice({name,price,friendPrice:selected.find(candidate=>candidate.name===name)?.friendPrice} as MenuItem,quantity),quantity})),total,status:"New" as const};
+   const order={customerId:customer.uid,createdAt:new Date().toISOString(),customerName:name,phone,mode,scheduledFor,deliveryLocation,instructions,items:selected.map(({name,price,friendPrice,quantity})=>({name,price:orderUnitPrice({name,price,friendPrice} as MenuItem,quantity),quantity})),total,status:"New" as const};
    const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);try{window.localStorage.setItem(`boemo-order-${id}`,JSON.stringify({...order,id}))}catch{}
    // Customer profile persistence is a convenience, never a reason to reject an order.
    // Firestore may deny/read-fail an empty profile while the order write itself is valid.
