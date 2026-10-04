@@ -217,10 +217,10 @@ The next work should deepen reliability and business operations rather than add 
 
 
 ## Account-holder loyalty and priority direction (October 2026)
-- Google account connection is an optional upgrade from the anonymous guest identity. Firebase supports linking the credential to the existing anonymous user so the same BOEMO UID can retain the customer's profile/order association. citeturn0search0turn0search4
+- Google account connection is an optional upgrade from the anonymous guest identity. Firebase supports linking the credential to the existing anonymous user so the same BOEMO UID can retain the customer's profile/order association.
 - A connected BOEMO account may become eligible for owner-controlled member benefits: occasional discounts, exclusive specials, early access, loyalty rewards, and priority handling of advance requests. Benefits are not automatic promises and may vary by offer, capacity, margin and kitchen decision.
 - Priority handling can extend beyond ordinary food orders to larger advance requests and catering/event enquiries. This is a service priority, not a guarantee of availability or acceptance.
-- Keep loyalty simple and useful. Current restaurant research supports exclusive offers, personalized rewards and early access, while also emphasizing that rewards should be easy to understand and worthwhile. citeturn1search0turn1search1turn1search10
+- Keep loyalty simple and useful. Current restaurant research supports exclusive offers, personalized rewards and early access, while also emphasizing that rewards should be easy to understand and worthwhile.
 - Do not let the customer client calculate or self-award a discount. Any financial benefit must remain owner-controlled and be applied/recorded through the kitchen workflow so the browser cannot grant itself money off.
-- Do not make Google connection or marketing notifications a prerequisite for ordering. Order-status communication and promotional/member communications are separate permissions. Browser push is still a later phase until Firebase Cloud Messaging infrastructure is implemented and tested. citeturn0search5
+- Do not make Google connection or marketing notifications a prerequisite for ordering. Order-status communication and promotional/member communications are separate permissions. Browser push is still a later phase until Firebase Cloud Messaging infrastructure is implemented and tested.
 - Account copy should explain the exchange clearly: connecting an account can preserve history and make the customer eligible for member-only/priority benefits; notification preferences should remain opt-in and understandable.
