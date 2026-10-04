@@ -289,3 +289,11 @@ The next work should deepen reliability and business operations rather than add 
 - If an anonymous guest links Google from the order-tracking page, the tracking view must react to the auth-state change and immediately re-attempt the live order read/subscription for the same order.
 - BOEMO order tracking stays private to the authenticated customer UID or authorized kitchen staff. Unlike a deliberately shareable Namane job link, BOEMO tracking links must not become publicly readable just for convenience.
 - The same-device local order snapshot is a recovery layer, not an authorization bypass and not a substitute for live Firestore ownership checks.
+
+
+### Customer dashboard + reminder checkpoint (October 2026)
+- Public Home must provide a direct **My BOEMO** path; customers must not have to place an order before they can reach their account.
+- My BOEMO is a customer dashboard/feed, not only a settings page: latest order, next scheduled food/pickup, tracking, and notification controls should be visible in the BOEMO context.
+- BOEMO pickup reminders are independent scheduled notifications. They are based on the customer's scheduled pickup time and saved notification preference, not on an admin changing order status.
+- The reminder runner uses a six-minute delivery window around each five-minute GitHub Actions run and runs on Africa/Gaborone time. Duplicate delivery records prevent repeat sends.
+- Order tracking remains private to the authenticated customer UID/guest session; never turn BOEMO order URLs into public readable share links like Namane tracked jobs.
