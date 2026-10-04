@@ -224,3 +224,8 @@ The next work should deepen reliability and business operations rather than add 
 - Do not let the customer client calculate or self-award a discount. Any financial benefit must remain owner-controlled and be applied/recorded through the kitchen workflow so the browser cannot grant itself money off.
 - Do not make Google connection or marketing notifications a prerequisite for ordering. Order-status communication and promotional/member communications are separate permissions. Browser push is still a later phase until Firebase Cloud Messaging infrastructure is implemented and tested.
 - Account copy should explain the exchange clearly: connecting an account can preserve history and make the customer eligible for member-only/priority benefits; notification preferences should remain opt-in and understandable.
+
+## Menu integrity checkpoint (October 2026)
+- Automatic legacy menu migration has been disabled. A menu item saved as a Deal must never be silently moved into Today's Food based on the day the admin page happens to open.
+- This matters for Bring-a-Friend offers: the homepage already renders `friendPrice` for published deal records, so a deal being reclassified as daily can make it disappear from Special Deals without the homepage renderer being the root cause.
+- Existing Firestore records are not rewritten automatically. Any historical record that was already reclassified must be inspected and repaired deliberately from its stored data; do not infer its original section or day.
