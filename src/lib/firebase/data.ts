@@ -1,5 +1,5 @@
 "use client";
-import {collection,doc,getDoc,getDocs,onSnapshot,query,setDoc,updateDoc,deleteDoc,where,writeBatch} from "firebase/firestore";
+import {collection,doc,getDoc,getDocs,onSnapshot,query,setDoc,updateDoc,deleteDoc,where} from "firebase/firestore";
 import type {Unsubscribe} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
@@ -38,21 +38,7 @@ const STARTER_MENU:MenuItem[]=[
 {id:"deal-beggar-chips",name:"Beggar & Chips",price:30,friendPrice:25,category:"Deal",description:"",available:true,preparationMinutes:15,sortOrder:101,section:"deal",days:[]},{id:"deal-hotdog",name:"Hot Dog",price:25,friendPrice:20,category:"Deal",description:"",available:true,preparationMinutes:10,sortOrder:102,section:"deal",days:[]},{id:"deal-potatoes",name:"Potatoes",price:10,category:"Deal",description:"",available:true,preparationMinutes:10,sortOrder:103,section:"deal",days:[]},{id:"deal-cup-drink",name:"Cup Drink",price:8,friendPrice:7.5,category:"Deal",description:"Bring a Friend: 2 for P15",available:true,preparationMinutes:2,sortOrder:104,section:"deal",days:[]},{id:"deal-still-water",name:"Still Water",price:7,friendPrice:5,category:"Deal",description:"Bring a Friend: 2 for P10",available:true,preparationMinutes:1,sortOrder:105,section:"deal",days:[]},{id:"deal-sausage-chips",name:"Sausage & Chips",price:30,category:"Deal",description:"",available:true,preparationMinutes:15,sortOrder:106,section:"deal",days:[]},{id:"deal-combo-sausage-chips-drink",name:"Combo: Sausage + Chips + Drink",price:40,category:"Deal",description:"",available:true,preparationMinutes:15,sortOrder:107,section:"deal",days:[]},{id:"deal-beggar-chips-drink",name:"Beggar + Chips + Drink",price:40,category:"Deal",description:"",available:true,preparationMinutes:15,sortOrder:108,section:"deal",days:[]}];
 export async function ensureStarterMenuSeeded():Promise<MenuItem[]>{const snapshot=await getDocs(menuCollection);if(snapshot.docs.length)return snapshot.docs.map(item=>({id:item.id,...item.data() as Omit<MenuItem,"id">})).sort((a,b)=>a.sortOrder-b.sortOrder||a.name.localeCompare(b.name));const marker=await getDoc(doc(settingsCollection,"menu-seed-v1"));if(marker.exists())return [];for(const item of STARTER_MENU)await setDoc(doc(menuCollection,item.id),item);await setDoc(doc(settingsCollection,"menu-seed-v1"),{seeded:true,version:1,updatedAt:new Date().toISOString()});return STARTER_MENU;}
 
-export async function migrateLegacyDailyMenu():Promise<number>{
- const marker=await getDoc(doc(settingsCollection,"legacy-daily-menu-migration-v1"));
- if(marker.exists())return 0;
- const snapshot=await getDocs(menuCollection);
- const items=snapshot.docs.map(item=>({id:item.id,...item.data() as Omit<MenuItem,"id">}));
- const today=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"Africa/Gaborone"}).format(new Date());
- if(items.some(item=>item.available&&item.section==="daily"&&(item.days??[]).includes(today))){await setDoc(doc(settingsCollection,"legacy-daily-menu-migration-v1"),{completedAt:new Date().toISOString(),migrated:0,skipped:true});return 0;}
- const legacy=items.filter(item=>item.available&&item.section==="deal"&&item.category.trim().toLowerCase()==="deal"&&!item.id.startsWith("deal-"));
- if(!legacy.length){await setDoc(doc(settingsCollection,"legacy-daily-menu-migration-v1"),{completedAt:new Date().toISOString(),migrated:0});return 0;}
- const batch=writeBatch(db);
- legacy.forEach(item=>batch.update(doc(menuCollection,item.id),{section:"daily",days:[today],category:"Today"}));
- batch.set(doc(settingsCollection,"legacy-daily-menu-migration-v1"),{completedAt:new Date().toISOString(),migrated:legacy.length,day:today});
- await batch.commit();
- return legacy.length;
-}
+// Legacy menu migration is intentionally retained only as historical code context.\n// Existing menu records must never be silently reclassified by the current day.\n
 
 const MENU_CACHE_KEY="boemo-menu-cache-v2";
 export function readCachedMenuItems():MenuItem[]{if(typeof window==="undefined")return [];try{const raw=window.localStorage.getItem(MENU_CACHE_KEY);return raw?JSON.parse(raw) as MenuItem[]:[]}catch{return []}}
