@@ -8,6 +8,30 @@ const db=getFirestore();
 const messaging=getMessaging();
 const WINDOW_MS=6*60*1000;
 const LOOKAHEAD_MS=65*60*1000;
+const GABORONE_OFFSET="+02:00";
+
+function parseScheduledFor(value){
+  if(typeof value!=="string")return NaN;
+  const hasOffset=/[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
+  const normalized=hasOffset?value:value+":00"+GABORONE_OFFSET;
+  const time=Date.parse(normalized);
+  return Number.isFinite(time)?time:NaN;
+}
+
+function gaboroneInput(date){
+  const parts=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Africa/Gaborone",
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit",
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:false
+  }).formatToParts(date);
+  const get=type=>parts.find(part=>part.type===type)?.value||"";
+  return get("year")+"-"+get("month")+"-"+get("day")+"T"+get("hour")+":"+get("minute")+":"+get("second");
+}
 const TERMINAL_STATUSES=new Set(["Cancelled","Collected","Delivered"]);
 const INVALID_TOKEN_CODES=new Set([
   "messaging/registration-token-not-registered",
@@ -57,7 +81,9 @@ async function remindUser(uid,leadMinutes,order,admin){
   const jobId=order.id+"_"+uid+"_"+leadMinutes;
   if(await alreadySent(jobId))return {sent:false,reason:"already-sent"};
 
-  const scheduled=new Date(order.scheduledFor);
+  const scheduledTime=parseScheduledFor(order.scheduledFor);
+  if(!Number.isFinite(scheduledTime))return {sent:false,reason:"invalid-scheduled-time"};
+  const scheduled=new Date(scheduledTime);
   const timeText=new Intl.DateTimeFormat("en-GB",{
     timeStyle:"short",
     timeZone:"Africa/Gaborone"
@@ -99,12 +125,12 @@ async function remindUser(uid,leadMinutes,order,admin){
 
 async function runPickupReminders(){
   const now=Date.now();
-  const lower=new Date(now).toISOString();
-  const upper=new Date(now+LOOKAHEAD_MS).toISOString();
+  const lower=gaboroneInput(new Date(now));
+  const upper=gaboroneInput(new Date(now+LOOKAHEAD_MS));
 
   const [ordersSnapshot,adminsSnapshot]=await Promise.all([
-    // Query only by time so the free GitHub Actions runner does not depend
-    // on a composite Firestore index; filter pickup orders in application code.
+    // Keep the query in Gaborone local-string space. New orders include +02:00;
+    // legacy datetime-local strings remain sortable and are parsed as Gaborone below.
     db.collection("orders")
       .where("scheduledFor",">=",lower)
       .where("scheduledFor","<=",upper)
@@ -133,7 +159,7 @@ async function runPickupReminders(){
     if(order.mode!=="pickup")continue;
     if(TERMINAL_STATUSES.has(order.status))continue;
 
-    const scheduledAt=new Date(order.scheduledFor).getTime();
+    const scheduledAt=parseScheduledFor(order.scheduledFor);
     if(!Number.isFinite(scheduledAt))continue;
 
     const recipients=[];
