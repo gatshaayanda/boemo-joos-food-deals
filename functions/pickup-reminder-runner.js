@@ -193,7 +193,7 @@ async function runPickupReminders(){
     }
   }
 
-  return {orders:ordersSnapshot.size,reminders,sent};
+  const summary={orders:ordersSnapshot.size,reminders,sent};\n  console.log("BOEMO pickup reminders:",JSON.stringify(summary));\n  return summary;
 }
 
 module.exports={runPickupReminders};
