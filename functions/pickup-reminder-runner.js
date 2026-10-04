@@ -6,7 +6,7 @@ if(!getApps().length)initializeApp();
 
 const db=getFirestore();
 const messaging=getMessaging();
-const WINDOW_MS=4*60*1000;
+const WINDOW_MS=6*60*1000;
 const LOOKAHEAD_MS=65*60*1000;
 const TERMINAL_STATUSES=new Set(["Cancelled","Collected","Delivered"]);
 const INVALID_TOKEN_CODES=new Set([
