@@ -13,7 +13,7 @@ const GABORONE_OFFSET="+02:00";
 function parseScheduledFor(value){
   if(typeof value!=="string")return NaN;
   const hasOffset=/[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
-  const normalized=hasOffset?value:value+":00"+GABORONE_OFFSET;
+  const normalized=hasOffset?value:value+GABORONE_OFFSET;
   const time=Date.parse(normalized);
   return Number.isFinite(time)?time:NaN;
 }
