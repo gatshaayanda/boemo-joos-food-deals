@@ -253,3 +253,14 @@ The next work should deepen reliability and business operations rather than add 
 ## No-menu preorder recovery checkpoint (October 2026)
 - The customer Order page must not make an unpublished food day a dead end when a future daily menu is already published. Show the next published food day and a direct pre-order CTA inside the empty state.
 - This recovery action must derive only from published Firestore daily records and Africa/Gaborone calendar dates. It must never invent future food, prices or availability.
+
+## Pickup notification checkpoint (October 2026)
+- BOEMO supports opt-in web push pickup reminders for both customers and authorized kitchen staff.
+- The default reminder lead time is 15 minutes, with selectable 5, 10, 15, 20, 30, 45 or 60 minutes before scheduled pickup.
+- Notification permission must be requested from an explicit user action; never pop the browser permission dialog on page load.
+- Guest checkout remains intact. After a successful order, the same authenticated guest session is offered notification settings so a guest can enable pickup reminders without creating a Google account.
+- Device registration tokens are stored privately under the authenticated user's notification token path. Firestore rules must never expose another user's tokens.
+- Background delivery uses Firebase Cloud Messaging and the existing BOEMO service worker so notifications can arrive when the PWA is not open. FCM web push requires HTTPS and a Firebase Web Push/VAPID public key.
+- Reminder scheduling is a Firebase Cloud Function using Cloud Scheduler, not Vercel Cron. This matters because the current Vercel Hobby plan does not provide minute-level Cron precision.
+- The scheduled function targets pickup orders and sends to the customer plus opted-in admin devices at each recipient's chosen lead time. Delivery/collected/cancelled orders are not reminded.
+- Firebase scheduled functions require the Firebase project to use the Blaze plan. The app code can be pushed independently, but production reminder delivery is not considered live until the scheduled function is deployed and the Firebase Web Push public key is configured.
