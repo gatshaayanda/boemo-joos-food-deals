@@ -206,3 +206,11 @@ The next work should deepen reliability and business operations rather than add 
 - Order tracking uses the authenticated guest session for live Firestore access, while the same-device snapshot can prevent a confusing blank/error screen when that session is temporarily unavailable.
 - The service-worker shell version is bumped when customer-facing code changes so installed PWAs can detect and activate the new shell.
 - Google sign-in still requires the production Vercel hostname to be an authorized Firebase Authentication domain and Google to be enabled as a provider; this is a Firebase Console setting, not an application-code setting.
+
+
+## Customer food-day / preorder UX (October 2026)
+- When no Today's Food is published, the homepage should not dead-end. If a future Africa/Gaborone daily menu item is published, show a live countdown to that next food day and a direct pre-order CTA.
+- Pre-ordering must use the same Firestore menu source of truth. The order screen accepts a future date and shows the daily items published for that weekday plus evergreen deals; it must never invent future food or prices.
+- Guest checkout remains guest-friendly but uses Firebase Anonymous Auth under the hood so each order has an authenticated owner. This keeps Firestore order reads private while requiring no customer sign-in.
+- Google sign-in controls retain Google branding; BOEMO styling belongs around the control, not inside the Google-branded action itself.
+- Firebase Firestore rules must require a customerId tied to the authenticated guest/customer UID on order creation. Do not fall back to unauthenticated order creation.
