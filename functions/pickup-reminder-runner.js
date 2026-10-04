@@ -103,8 +103,9 @@ async function runPickupReminders(){
   const upper=new Date(now+LOOKAHEAD_MS).toISOString();
 
   const [ordersSnapshot,adminsSnapshot]=await Promise.all([
+    // Query only by time so the free GitHub Actions runner does not depend
+    // on a composite Firestore index; filter pickup orders in application code.
     db.collection("orders")
-      .where("mode","==","pickup")
       .where("scheduledFor",">=",lower)
       .where("scheduledFor","<=",upper)
       .get(),
@@ -129,6 +130,7 @@ async function runPickupReminders(){
 
   for(const orderDoc of ordersSnapshot.docs){
     const order={id:orderDoc.id,...orderDoc.data()};
+    if(order.mode!=="pickup")continue;
     if(TERMINAL_STATUSES.has(order.status))continue;
 
     const scheduledAt=new Date(order.scheduledFor).getTime();
