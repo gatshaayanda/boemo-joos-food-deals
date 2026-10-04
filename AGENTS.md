@@ -185,8 +185,9 @@ The next work should deepen reliability and business operations rather than add 
 
 
 ## Current-service menu placement correction (September 2026)
-- Legacy custom menu entries created by the former kitchen form (`section: deal`, `category: Deal`, generated non-`deal-` IDs) are the kitchen's current service foods. Until staff reclassifies them in the admin, the customer homepage and order form present them under Today's Food for the current Africa/Gaborone day, and exclude them from the separate evergreen Deals list.
-- Stable `deal-` starter records remain under Deals. Explicit daily records continue to obey their weekday schedule. The same classification is shared by homepage and checkout so displayed sections match orderable foods.
+- Legacy custom menu entries created by the former kitchen form (`section: deal`, `category: Deal`, generated non-`deal-` IDs) may be treated as current service foods by the customer homepage/order form for compatibility with historical kitchen data.
+- This is a compatibility presentation rule, not permission to rewrite Firestore records. Automatic legacy migration is disabled. Staff must deliberately reclassify a record in the admin when its stored section/day is wrong.
+- Stable `deal-` starter records remain under Deals. Explicit daily records continue to obey their weekday schedule. A published `friendPrice` also makes an item eligible for the customer Deals presentation so an offer is not silently lost just because an older record was reclassified as daily.
 
 
 ## Deals and offers admin UX (September 2026)
@@ -229,3 +230,14 @@ The next work should deepen reliability and business operations rather than add 
 - Automatic legacy menu migration has been disabled. A menu item saved as a Deal must never be silently moved into Today's Food based on the day the admin page happens to open.
 - This matters for Bring-a-Friend offers: the homepage already renders `friendPrice` for published deal records, so a deal being reclassified as daily can make it disappear from Special Deals without the homepage renderer being the root cause.
 - Existing Firestore records are not rewritten automatically. Any historical record that was already reclassified must be inspected and repaired deliberately from its stored data; do not infer its original section or day.
+
+
+## Everyday conversion / utility checkpoint (October 2026)
+- The homepage is a daily utility surface, not only a brochure: when today's food exists, it also shows the next published food day and a live Africa/Gaborone countdown with a direct order-ahead CTA.
+- Countdown dates must be calculated from Africa/Gaborone calendar data, not the customer's device-local midnight, so Botswana users do not get a shifted weekday/date.
+- The Deals section must surface explicit deal records and any published item with a `friendPrice`, because Bring-a-Friend pricing is itself a customer offer. Never invent a price.
+- Bring-a-Friend pricing is now actionable in checkout: when a customer orders 2+ units of an item with `friendPrice`, checkout applies that lower per-person price and stores the applied unit price in the order. The customer must see that the offer is active.
+- Keep guest ordering prominent. Customer research consistently finds forced account creation and hidden guest checkout create avoidable abandonment; BOEMO should preserve ordering without authentication while keeping optional My BOEMO/account benefits separate.
+- Show important cost/offer information before submission. The customer should see regular price, offer price, and the resulting total rather than discovering the benefit only after ordering.
+- Do not add notification permission prompts as a prerequisite for ordering. Notifications remain an opt-in engagement layer until Firebase Cloud Messaging is implemented and tested.
+- Continue prioritizing practical repeat-use utility: today's menu, next food day, order-ahead, mobile-kitchen location/hours, scheduled pickup/delivery, order tracking, receipts, guest checkout and optional account history.
