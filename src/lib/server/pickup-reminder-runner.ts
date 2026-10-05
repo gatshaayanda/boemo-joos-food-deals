@@ -1,4 +1,4 @@
-import {cert,initializeApp,getApp,getApps} from "firebase-admin/app";
+import {cert,initializeApp,getApps} from "firebase-admin/app";
 import {getFirestore, type DocumentReference} from "firebase-admin/firestore";
 import type {MulticastMessage} from "firebase-admin/messaging";
 import {getMessaging} from "firebase-admin/messaging";
@@ -20,7 +20,6 @@ const messaging=getMessaging();
 const CATCH_UP_WINDOW_MS=15*60*1000;
 const GABORONE_OFFSET="+02:00";
 
-type ReminderItem={quantity:unknown;name:unknown};
 type ReminderOrder={id:string;scheduledFor?:unknown;status?:unknown;customerId?:unknown;customerName?:string;items?:unknown};
 type NotificationToken={id:string;ref:DocumentReference;token:string};
 type NotificationResult={sent:boolean;reason?:string;successCount?:number;failureCount?:number};
