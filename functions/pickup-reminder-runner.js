@@ -176,7 +176,7 @@ async function runPickupReminders(){
 
     for(const [uid,lead] of adminPrefs){
       const reminderAt=scheduledAt-lead*60*1000;
-      if(Math.abs(reminderAt-now)<=WINDOW_MS){
+      if(reminderAt<=now&&now-reminderAt<=CATCH_UP_WINDOW_MS){
         recipients.push({uid,lead,admin:true});
       }
     }
