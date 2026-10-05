@@ -362,3 +362,5 @@ The next work should deepen reliability and business operations rather than add 
 <!-- Vercel build trigger: 2026-10-05 -->
 
 <!-- Vercel build trigger: 2026-10-05-12-CHORE -->
+
+<!-- Vercel verification trigger: 2026-10-05-2 -->
