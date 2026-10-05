@@ -1,7 +1,7 @@
 importScripts("https://www.gstatic.com/firebasejs/11.9.0/firebase-app-compat.js","https://www.gstatic.com/firebasejs/11.9.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyALJm812m471H04p3UwMTkv5AspRusYrDU",authDomain:"boemo-joos-food-deals.firebaseapp.com",projectId:"boemo-joos-food-deals",storageBucket:"boemo-joos-food-deals.firebasestorage.app",messagingSenderId:"241749710360",appId:"1:241749710360:web:85f80d14b80113e6e0956d",measurementId:"G-DQQL6HBPPK"});
 const boemoMessaging=firebase.messaging();
-boemoMessaging.onBackgroundMessage((payload)=>{const title=payload.notification?.title||"BOEMO pickup reminder";const options={body:payload.notification?.body||"Your BOEMO pickup is coming up.",icon:"/icon.svg",badge:"/icon.svg",data:{link:payload.fcmOptions?.link||payload.data?.link||"/account"}};self.registration.showNotification(title,options)});
+boemoMessaging.onBackgroundMessage((payload)=>{if(payload.notification)return;const title=payload.data?.title||"BOEMO pickup reminder";const options={body:payload.data?.body||"Your BOEMO pickup is coming up.",icon:"/icon.svg",badge:"/icon.svg",data:{link:payload.data?.link||"/account"}};self.registration.showNotification(title,options)});
 self.addEventListener("notificationclick",(event)=>{event.notification.close();const link=event.notification.data?.link||"/account";event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{for(const client of list){if("focus" in client){client.navigate(link);return client.focus()}}return clients.openWindow(link)}))});
 const CACHE_VERSION = "boemo-shell-v10";
 const SHELL_CACHE = CACHE_VERSION;
