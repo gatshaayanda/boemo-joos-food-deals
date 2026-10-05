@@ -21,7 +21,7 @@ const CATCH_UP_WINDOW_MS=15*60*1000;
 const GABORONE_OFFSET="+02:00";
 
 type ReminderItem={quantity:unknown;name:unknown};
-type ReminderOrder={id:string;scheduledFor?:unknown;status?:unknown;customerId?:unknown;customerName?:unknown;items?:unknown};
+type ReminderOrder={id:string;scheduledFor?:unknown;status?:unknown;customerId?:unknown;customerName?:string;items?:unknown};
 type NotificationToken={id:string;ref:DocumentReference;token:string};
 type NotificationResult={sent:boolean;reason?:string;successCount?:number;failureCount?:number};
 type Recipient={uid:string;lead:number;admin:boolean};
