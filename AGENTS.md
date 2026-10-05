@@ -266,15 +266,15 @@ The next work should deepen reliability and business operations rather than add 
 - Firebase scheduled functions require the Firebase project to use the Blaze plan. The app code can be pushed independently, but production reminder delivery is not considered live until the scheduled function is deployed and the Firebase Web Push public key is configured.
 
 
-## Free pickup reminder scheduler checkpoint (October 2026)
-- Production pickup reminders now use the public-repository GitHub Actions scheduler every 5 minutes instead of depending on Firebase Cloud Scheduler/Blaze or Vercel Cron.
-- The workflow is `.github/workflows/pickup-reminders.yml`. It runs the reusable `functions/pickup-reminder-runner.js` with Firebase Admin credentials supplied through the encrypted repository secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
-- Never commit, print, or paste the Firebase service-account JSON into source control or chat. The GitHub secret is the only production credential input for the reminder runner.
+## Pickup reminder scheduler checkpoint (October 2026)
+- Production pickup reminders should use the native Firebase scheduled function in `functions/index.js`, backed by Cloud Scheduler, because real customer reminders need minute-level scheduling rather than a five-minute GitHub Actions approximation.
+- The native function runs `sendPickupReminders` every minute in `Africa/Gaborone` and reuses `functions/pickup-reminder-runner.js`.
+- Firebase documents `onSchedule` as the supported Cloud Scheduler integration for scheduled functions. Scheduled functions require the Firebase project to use the Blaze plan.
+- The GitHub Actions workflow in `.github/workflows/pickup-reminders.yml` remains a fallback/manual verification path until the native Firebase scheduler is confirmed deployed. Do not remove the fallback until native production execution has been verified.
 - The runner reads the existing `orders`, `notificationPreferences`, `notificationTokens` and `admins` collections and sends FCM web push through the existing service worker.
-- The scheduler runs every 5 minutes. Reminder delivery is therefore approximate rather than second-perfect; the runner uses a 4-minute matching window and an idempotent `notificationDeliveries` marker so the same recipient/lead/order reminder is not repeatedly sent.
-- Supported lead times remain 5, 10, 15, 20, 30, 45 and 60 minutes. Cancelled, collected and delivered orders are skipped.
-- The Firebase scheduled-function wrapper remains in `functions/index.js` as a future native Firebase scheduler option, but BOEMO production reminder delivery does not require the Blaze plan.
-- The GitHub Actions workflow has a manual `workflow_dispatch` path for verification. Production reminders are considered operational only after the repository secret is present, a manual run completes successfully, and an actual test notification is received.
+- Reminder lead times remain 5, 10, 15, 20, 30, 45 and 60 minutes. Cancelled, collected and delivered orders are skipped.
+- Reminder delivery is idempotent through `notificationDeliveries`; scheduled invocations may overlap, so delivery claiming must prevent concurrent duplicate sends.
+- Production reminders are not considered operational merely because code is pushed. They require a successful native scheduled-function deployment and an actual end-to-end test notification.
 - The public Firebase Web Push/VAPID key remains client-side configuration and is not a secret.
 
 
