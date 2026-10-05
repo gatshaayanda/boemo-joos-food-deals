@@ -7,7 +7,6 @@ if(!getApps().length)initializeApp();
 const db=getFirestore();
 const messaging=getMessaging();
 const CATCH_UP_WINDOW_MS=15*60*1000;
-const LOOKAHEAD_MS=90*60*1000;
 const GABORONE_OFFSET="+02:00";
 
 function parseScheduledFor(value){
@@ -151,16 +150,12 @@ async function remindUser(uid,leadMinutes,order,admin){
 
 async function runPickupReminders(){
   const now=Date.now();
-  const lower=gaboroneInput(new Date(now));
-  const upper=gaboroneInput(new Date(now+LOOKAHEAD_MS));
-
+  // Do not range-query scheduledFor as a string. BOEMO has deliberately supported
+  // both legacy datetime-local values and explicit +02:00/Z values, and those textual
+  // representations are not safely comparable as Firestore strings. Read the small
+  // pickup queue and compare the parsed instants in Gaborone/UTC time instead.
   const [ordersSnapshot,adminsSnapshot]=await Promise.all([
-    // Keep the query in Gaborone local-string space. New orders include +02:00;
-    // legacy datetime-local strings remain sortable and are parsed as Gaborone below.
-    db.collection("orders")
-      .where("scheduledFor",">=",lower)
-      .where("scheduledFor","<=",upper)
-      .get(),
+    db.collection("orders").where("mode","==","pickup").get(),
     db.collection("admins").get()
   ]);
 
@@ -182,11 +177,13 @@ async function runPickupReminders(){
 
   for(const orderDoc of ordersSnapshot.docs){
     const order={id:orderDoc.id,...orderDoc.data()};
-    if(order.mode!=="pickup")continue;
     if(TERMINAL_STATUSES.has(order.status))continue;
 
     const scheduledAt=parseScheduledFor(order.scheduledFor);
     if(!Number.isFinite(scheduledAt))continue;
+    // Only inspect orders that could currently have a reminder due. This keeps the
+    // scan bounded even though the query intentionally avoids fragile string ranges.
+    if(scheduledAt < now-CATCH_UP_WINDOW_MS || scheduledAt > now+90*60*1000)continue;
 
     const recipients=[];
     if(typeof order.customerId==="string"){
@@ -224,7 +221,23 @@ async function runPickupReminders(){
   return summary;
 }
 
-module.exports={runPickupReminders};
+async function sendTestNotification(uid){
+  const result=await sendToUser(uid,{
+    notification:{
+      title:"BOEMO test notification",
+      body:"Push notifications are working on this device."
+    },
+    data:{link:"/account",test:"true"},
+    webpush:{
+      fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+"/account"},
+      notification:{tag:"boemo-test-notification",icon:"/icon.svg",badge:"/icon.svg"}
+    }
+  });
+  if(!result.sent)throw new Error(result.reason||"no-token");
+  return result;
+}
+
+module.exports={runPickupReminders,sendTestNotification};
 
 if(require.main===module){
   runPickupReminders()
