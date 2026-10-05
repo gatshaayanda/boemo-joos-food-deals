@@ -41,10 +41,10 @@ jobs:
           umask 077
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
 
-      - name: Deploy pickup reminder function
+      - name: Deploy BOEMO notification functions
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: firebase deploy --only functions:sendPickupReminders --project boemo-joos-food-deals --non-interactive
+        run: firebase deploy --only functions:sendPickupReminders,functions:sendTestPickupNotification --project boemo-joos-food-deals --non-interactive
 
       - name: Remove Firebase service account
         if: always()
