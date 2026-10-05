@@ -319,3 +319,31 @@ The next work should deepen reliability and business operations rather than add 
 - Admin save confirmations must be visible at the point of action, not only as a message at the top of a long page. Use an immediate button/loading state plus persistent inline confirmation so staff can tell the save completed without scrolling.
 - Successful settings/menu/reconciliation saves should leave the saved values visible in the current view. Error feedback must remain equally visible and must never imply a backend-confirmed save when the write failed.
 - Pickup reminder parsing treats timezone-less legacy datetime-local order values as Africa/Gaborone; new scheduled orders already store an explicit +02:00 offset.
+
+
+## Menu CRUD + food media UX direction — October 2026
+- The BOEMO admin must have a first-class **Menu & Prices** CRUD workflow. The owner/staff should be able to create, view, edit, publish/unpublish, availability-toggle, and delete menu items without touching Firestore or code.
+- CRUD fields must preserve the existing business model: item name, description where useful, price, optional Bring-a-Friend price, section (Today's Food vs Deal / offer), applicable weekday(s) for daily food, availability, and customer-facing media.
+- Media is part of the menu-item content model, not a separate technical afterthought. The owner should be able to attach a food photo and, where useful, a short food video or lightweight animated asset. The implementation must not require the owner to understand filenames, storage paths, URLs, Firebase or code.
+- **Preferred public media hierarchy:** use a strong food photo/thumbnail as the default visual; optionally provide a short muted/inline video preview when it genuinely helps show the food; support lightweight GIF/animated media only when it is materially useful and does not create unnecessary page weight. Do not make video/GIF mandatory for ordering.
+- Public menu cards should remain fast to scan on a phone: food name, price/offer, availability state and a clear order action stay primary. Media should strengthen recognition and appetite appeal without pushing the ordering action below the fold.
+- Tapping a food image/media should open a clear **item detail surface** (prefer a mobile-friendly modal/bottom sheet or dedicated item panel rather than navigating away from the menu) with a larger image/media view, description, pricing/offer information and the order action. The customer must have an obvious close/back path and must not lose an in-progress cart/order selection.
+- Larger images should support normal mobile inspection, including pinch/double-tap zoom where appropriate. Do not force customers to guess that an image can be enlarged.
+- Videos, if used publicly, should be short, muted by default, playsInline, and respectful of reduced-motion/data-saving preferences. Avoid autoplaying multiple heavy videos in a scrolling menu. A still thumbnail/poster remains the safe fallback.
+- The admin media editor should show an immediate preview before save, make the current media obvious, provide replace/remove controls, validate supported file type/size, and make upload/save state unmistakable. Never imply that media is published until the storage write and menu-record update are actually confirmed.
+- Store operational menu metadata in Firestore and heavy media objects in Firebase Cloud Storage. Menu documents should reference media metadata/URLs rather than embedding binary data. Firebase Storage rules must restrict writes to authorized owner/staff users and validate content type and size; public reads are appropriate only for media that is intentionally published on the public menu. Firebase documents Storage Rules as the mechanism for authenticated/role-based authorization and file-size/content-type validation.
+- Media storage must be treated as a cost/performance concern. Prefer appropriately sized/compressed images, responsive delivery where practical, short videos, and lazy loading. Do not preload every menu video or download full-resolution media before the customer asks to inspect it.
+- Public menu UX should follow food-delivery research rather than generic brochure design. Baymard's 2026 food-delivery benchmark specifically evaluates restaurant/menu list thumbnails, menu-item images, image zoom, descriptions, pricing/offers, add-to-order behavior and mobile ordering. Nielsen Norman Group's progressive-disclosure research supports keeping frequent/primary information visible while revealing secondary detail only when requested.
+- Admin CRUD and public presentation should therefore be designed as one connected workflow:
+  1. Owner creates/edits the menu item.
+  2. Owner attaches or replaces food media and sees a local preview.
+  3. Owner explicitly saves/publishes and receives visible confirmation.
+  4. Public menu shows the item with a fast thumbnail/media treatment.
+  5. Customer taps the item when they want more detail, sees the larger media/detail surface, and can order without losing their place/cart.
+- Do not copy Admin Hub Global's visual style wholesale into BOEMO. The useful reference is its current **editorial media-row/project-card treatment with video previews**: BOEMO should borrow the principle of making real media a prominent, contained preview while keeping BOEMO's own mobile food-ordering hierarchy, branding and conversion path.
+- Before implementation, inspect the current Admin Hub Global media presentation and the live BOEMO admin/public menu state again. Preserve working BOEMO ordering, offline behavior, published-menu source-of-truth rules, guest checkout and save-state UX.
+- Relevant research references for future implementation:
+  - Baymard Institute, Food Delivery & Takeout UX Benchmark 2026: https://baymard.com/research-articles/food-delivery-and-takeout-ux-benchmark-2026
+  - Baymard Institute, Food Delivery & Takeout UX Research: https://baymard.com/research/online-food-delivery
+  - Nielsen Norman Group, Progressive Disclosure: https://www.nngroup.com/articles/progressive-disclosure/
+  - Firebase Cloud Storage upload/security guidance: https://firebase.google.com/docs/storage/web/upload-files and https://firebase.google.com/docs/storage/security
