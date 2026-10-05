@@ -7,7 +7,7 @@ export async function POST(request:Request){
   const supplied=request.headers.get("authorization")?.replace(/^Bearer\s+/i,"").trim();
   if(!expected||supplied!==expected)return NextResponse.json({ok:false,error:"Unauthorized."},{status:401});
   try{
-    const {runPickupReminders}=await import("@/lib/server/pickup-reminder-runner.js");
+    const {runPickupReminders}=await import("@/lib/server/pickup-reminder-runner");
     const summary=await runPickupReminders();
     return NextResponse.json({ok:true,...summary});
   }catch(error){
