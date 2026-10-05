@@ -1,5 +1,5 @@
 import {cert,initializeApp,getApp,getApps} from "firebase-admin/app";
-import {getFirestore} from "firebase-admin/firestore";
+import {getFirestore, type DocumentReference} from "firebase-admin/firestore";
 import {getMessaging} from "firebase-admin/messaging";
 
 if(!getApps().length){
@@ -172,7 +172,7 @@ async function runPickupReminders(){
 
   for(const orderDoc of ordersSnapshot.docs){
     const order={id:orderDoc.id,...orderDoc.data()};
-    if(TERMINAL_STATUSES.has(order.status))continue;
+    if(typeof order.status==="string"&&TERMINAL_STATUSES.has(order.status))continue;
 
     const scheduledAt=parseScheduledFor(order.scheduledFor);
     if(!Number.isFinite(scheduledAt))continue;
