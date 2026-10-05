@@ -8,6 +8,7 @@ on:
       - "functions/**"
       - "firebase.json"
       - ".firebaserc"
+      - ".github/workflows/firebase-reminder-deploy.yml"
   workflow_dispatch:
 
 permissions:
