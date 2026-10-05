@@ -358,3 +358,5 @@ The next work should deepen reliability and business operations rather than add 
 - The Firebase Spark plan remains valid for this architecture: FCM is used for delivery, while no Firebase Cloud Functions deployment is required.
 - The Firebase Admin service-account JSON must be stored as the Vercel environment variable `FIREBASE_ADMIN_KEY`; never commit it. The GitHub Actions scheduler only needs `BOEMO_REMINDER_CRON_SECRET`.
 - Do not reintroduce Firebase Functions merely to restore push delivery. If notification delivery breaks, inspect the Next.js API route, Vercel environment variables, FCM token records, service worker, and GitHub Actions scheduler first.
+
+<!-- Vercel build trigger: 2026-10-05 -->
