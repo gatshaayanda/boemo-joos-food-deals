@@ -25,7 +25,7 @@ async function requireUid(request:Request){
 export async function POST(request:Request){
   try{
     const uid=await requireUid(request);
-    const {sendTestNotification}=await import("@/lib/server/pickup-reminder-runner.js");
+    const {sendTestNotification}=await import("@/lib/server/pickup-reminder-runner");
     const result=await sendTestNotification(uid);
     return NextResponse.json({sent:true,...result});
   }catch(error){
