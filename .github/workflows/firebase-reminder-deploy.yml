@@ -1,0 +1,51 @@
+name: Deploy BOEMO reminder function
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "functions/**"
+      - "firebase.json"
+      - ".firebaserc"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boemo-firebase-reminder-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Write Firebase service account
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON"
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Deploy pickup reminder function
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: firebase deploy --only functions:sendPickupReminders --project boemo-joos-food-deals --non-interactive
+
+      - name: Remove Firebase service account
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
