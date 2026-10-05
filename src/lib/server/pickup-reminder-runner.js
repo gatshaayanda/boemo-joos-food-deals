@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const {cert}=require("firebase-admin/app");
 const {initializeApp,getApps}=require("firebase-admin/app");
 const {getFirestore}=require("firebase-admin/firestore");
@@ -8,7 +9,7 @@ if(!getApps().length){
   if(raw){
     let credential;
     try{credential=cert(JSON.parse(raw));}
-    catch(error){throw new Error("FIREBASE_ADMIN_KEY is not valid JSON.");}
+    catch{throw new Error("FIREBASE_ADMIN_KEY is not valid JSON.");}
     initializeApp({credential});
   }else{
     initializeApp();
@@ -28,20 +29,6 @@ function parseScheduledFor(value){
   return Number.isFinite(time)?time:NaN;
 }
 
-function gaboroneInput(date){
-  const parts=new Intl.DateTimeFormat("en-CA",{
-    timeZone:"Africa/Gaborone",
-    year:"numeric",
-    month:"2-digit",
-    day:"2-digit",
-    hour:"2-digit",
-    minute:"2-digit",
-    second:"2-digit",
-    hour12:false
-  }).formatToParts(date);
-  const get=type=>parts.find(part=>part.type===type)?.value||"";
-  return get("year")+"-"+get("month")+"-"+get("day")+"T"+get("hour")+":"+get("minute")+":"+get("second");
-}
 const TERMINAL_STATUSES=new Set(["Cancelled","Collected","Delivered"]);
 const INVALID_TOKEN_CODES=new Set([
   "messaging/registration-token-not-registered",
