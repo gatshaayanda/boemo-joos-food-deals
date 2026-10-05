@@ -6,8 +6,8 @@ if(!getApps().length)initializeApp();
 
 const db=getFirestore();
 const messaging=getMessaging();
-const WINDOW_MS=6*60*1000;
-const LOOKAHEAD_MS=65*60*1000;
+const CATCH_UP_WINDOW_MS=15*60*1000;
+const LOOKAHEAD_MS=90*60*1000;
 const GABORONE_OFFSET="+02:00";
 
 function parseScheduledFor(value){
@@ -168,7 +168,7 @@ async function runPickupReminders(){
       if(pref?.enabled){
         const lead=Number(pref.leadMinutes)||15;
         const reminderAt=scheduledAt-lead*60*1000;
-        if(Math.abs(reminderAt-now)<=WINDOW_MS){
+        if(reminderAt<=now&&now-reminderAt<=CATCH_UP_WINDOW_MS){
           recipients.push({uid:order.customerId,lead,admin:false});
         }
       }
@@ -193,7 +193,9 @@ async function runPickupReminders(){
     }
   }
 
-  const summary={orders:ordersSnapshot.size,reminders,sent};\n  console.log("BOEMO pickup reminders:",JSON.stringify(summary));\n  return summary;
+  const summary={orders:ordersSnapshot.size,reminders,sent};
+  console.log("BOEMO pickup reminders:",JSON.stringify(summary));
+  return summary;
 }
 
 module.exports={runPickupReminders};
