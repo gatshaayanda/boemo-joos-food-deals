@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import {NextResponse} from "next/server";
 import {cert,getApp,getApps,initializeApp} from "firebase-admin/app";
 import {getAuth} from "firebase-admin/auth";
@@ -26,9 +25,7 @@ async function requireUid(request:Request){
 export async function POST(request:Request){
   try{
     const uid=await requireUid(request);
-    const {sendTestNotification}=require("@/lib/server/pickup-reminder-runner.js") as {
-      sendTestNotification:(uid:string)=>Promise<{successCount:number;failureCount:number}>
-    };
+    const {sendTestNotification}=await import("@/lib/server/pickup-reminder-runner.js");
     const result=await sendTestNotification(uid);
     return NextResponse.json({sent:true,...result});
   }catch(error){
