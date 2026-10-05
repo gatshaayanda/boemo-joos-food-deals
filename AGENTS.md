@@ -347,3 +347,14 @@ The next work should deepen reliability and business operations rather than add 
   - Baymard Institute, Food Delivery & Takeout UX Research: https://baymard.com/research/online-food-delivery
   - Nielsen Norman Group, Progressive Disclosure: https://www.nngroup.com/articles/progressive-disclosure/
   - Firebase Cloud Storage upload/security guidance: https://firebase.google.com/docs/storage/web/upload-files and https://firebase.google.com/docs/storage/security
+
+
+## Browser push delivery architecture (October 2026)
+- BOEMO browser push uses Firebase Cloud Messaging with server-side Firebase Admin SDK from the Next.js/Vercel runtime. It does not use Firebase Cloud Functions.
+- Browser registration continues to store FCM tokens under `notificationTokens/{uid}/tokens/{encodedToken}`.
+- `/api/notifications/test` authenticates the Firebase ID token and sends a test push through the server-side Admin SDK.
+- `/api/notifications/reminders` is a protected server endpoint for the scheduled pickup-reminder runner.
+- The 5-minute GitHub Actions workflow calls the production reminder endpoint with `BOEMO_REMINDER_CRON_SECRET`. This is the scheduling layer because Vercel Hobby Cron does not provide the required five-minute cadence.
+- The Firebase Spark plan remains valid for this architecture: FCM is used for delivery, while no Firebase Cloud Functions deployment is required.
+- The Firebase Admin service-account JSON must be stored as the Vercel environment variable `FIREBASE_ADMIN_KEY`; never commit it. The GitHub Actions scheduler only needs `BOEMO_REMINDER_CRON_SECRET`.
+- Do not reintroduce Firebase Functions merely to restore push delivery. If notification delivery breaks, inspect the Next.js API route, Vercel environment variables, FCM token records, service worker, and GitHub Actions scheduler first.
