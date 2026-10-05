@@ -360,3 +360,5 @@ The next work should deepen reliability and business operations rather than add 
 - Do not reintroduce Firebase Functions merely to restore push delivery. If notification delivery breaks, inspect the Next.js API route, Vercel environment variables, FCM token records, service worker, and GitHub Actions scheduler first.
 
 <!-- Vercel build trigger: 2026-10-05 -->
+
+<!-- Vercel build trigger: 2026-10-05-12-CHORE -->
