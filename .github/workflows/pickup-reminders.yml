@@ -17,31 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install reminder dependencies
-        working-directory: functions
-        run: npm install --no-audit --no-fund --prefer-offline
-
-      - name: Write Firebase service account
+      - name: Call production reminder endpoint
         env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BOEMO_REMINDER_CRON_SECRET: ${{ secrets.BOEMO_REMINDER_CRON_SECRET }}
+          BOEMO_PUBLIC_URL: https://boemo-joos-food-deals.vercel.app
         run: |
-          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON"
-          umask 077
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
-
-      - name: Send pickup reminders
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: node functions/pickup-reminder-runner.js
-
-      - name: Remove Firebase service account
-        if: always()
-        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
+          test -n "$BOEMO_REMINDER_CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer $BOEMO_REMINDER_CRON_SECRET" \
+            "$BOEMO_PUBLIC_URL/api/notifications/reminders"
