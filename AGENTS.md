@@ -366,3 +366,12 @@ The next work should deepen reliability and business operations rather than add 
 <!-- Vercel verification trigger: 2026-10-05-2 -->
 
 <!-- Vercel verification trigger: 2026-10-05-3 -->
+
+
+## Pre-order planning link checkpoint (October 2026)
+- Any public "Order ahead for <day>" planning CTA passes the target Africa/Gaborone calendar date into `/order?date=YYYY-MM-DD`.
+- The order page must use that date as the selected menu day, so the daily food and evergreen deals shown in **Menu & deals** match the date the customer chose.
+- The preselected date must not silently invent a pickup/order time. Date and time are separate mobile-friendly inputs; the customer chooses the time for the selected date.
+- The scheduled order is stored as the selected Africa/Gaborone date + time with the existing explicit `+02:00` offset convention.
+- Changing the scheduled date must update the menu day without clearing the customer's in-progress food selection.
+- If a planning CTA is changed, preserve this date-to-menu linkage rather than hard-coding a weekday or relying on the device's local timezone.
