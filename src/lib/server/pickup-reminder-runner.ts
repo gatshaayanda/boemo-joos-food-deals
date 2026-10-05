@@ -1,5 +1,6 @@
 import {cert,initializeApp,getApp,getApps} from "firebase-admin/app";
 import {getFirestore, type DocumentReference} from "firebase-admin/firestore";
+import type {MulticastMessage} from "firebase-admin/messaging";
 import {getMessaging} from "firebase-admin/messaging";
 
 if(!getApps().length){
@@ -19,7 +20,13 @@ const messaging=getMessaging();
 const CATCH_UP_WINDOW_MS=15*60*1000;
 const GABORONE_OFFSET="+02:00";
 
-function parseScheduledFor(value){
+type ReminderItem={quantity:unknown;name:unknown};
+type ReminderOrder={id:string;scheduledFor?:unknown;status?:unknown;customerId?:unknown;customerName?:unknown;items?:unknown};
+type NotificationToken={id:string;ref:DocumentReference;token:string};
+type NotificationResult={sent:boolean;reason?:string;successCount?:number;failureCount?:number};
+type Recipient={uid:string;lead:number;admin:boolean};
+
+function parseScheduledFor(value:unknown):number{
   if(typeof value!=="string")return NaN;
   const hasOffset=/[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
   const normalized=hasOffset?value:value+GABORONE_OFFSET;
@@ -33,14 +40,14 @@ const INVALID_TOKEN_CODES=new Set([
   "messaging/invalid-registration-token"
 ]);
 
-async function tokensFor(uid){
+async function tokensFor(uid:string):Promise<NotificationToken[]>{
   const snapshot=await db.collection("notificationTokens").doc(uid).collection("tokens").get();
   return snapshot.docs
-    .map(doc=>({id:doc.id,ref:doc.ref,...doc.data()}))
+    .map(doc=>({id:doc.id,ref:doc.ref,...doc.data()} as NotificationToken))
     .filter(item=>typeof item.token==="string"&&item.token);
 }
 
-async function sendToUser(uid,message){
+async function sendToUser(uid:string,message:Omit<MulticastMessage,"tokens">):Promise<NotificationResult>{
   const tokens=await tokensFor(uid);
   if(!tokens.length)return {sent:false,reason:"no-token"};
 
@@ -61,7 +68,7 @@ async function sendToUser(uid,message){
   };
 }
 
-async function claimDelivery(jobId,data){
+async function claimDelivery(jobId:string,data:Record<string,unknown>):Promise<boolean>{
   const ref=db.collection("notificationDeliveries").doc(jobId);
   return db.runTransaction(async transaction=>{
     const snapshot=await transaction.get(ref);
@@ -75,7 +82,7 @@ async function claimDelivery(jobId,data){
   });
 }
 
-async function markSent(jobId,data){
+async function markSent(jobId:string,data:Record<string,unknown>):Promise<void>{
   await db.collection("notificationDeliveries").doc(jobId).set({
     ...data,
     status:"sent",
@@ -83,11 +90,11 @@ async function markSent(jobId,data){
   },{merge:true});
 }
 
-async function releaseDelivery(jobId){
+async function releaseDelivery(jobId:string):Promise<void>{
   await db.collection("notificationDeliveries").doc(jobId).delete();
 }
 
-async function remindUser(uid,leadMinutes,order,admin){
+async function remindUser(uid:string,leadMinutes:number,order:ReminderOrder,admin:boolean):Promise<NotificationResult>{
   const jobId=order.id+"_"+uid+"_"+leadMinutes;
 
   const scheduledTime=parseScheduledFor(order.scheduledFor);
@@ -143,7 +150,7 @@ async function remindUser(uid,leadMinutes,order,admin){
   }
 }
 
-async function runPickupReminders(){
+async function runPickupReminders():Promise<{orders:number;reminders:number;sent:number}>{
   const now=Date.now();
   // Do not range-query scheduledFor as a string. BOEMO has deliberately supported
   // both legacy datetime-local values and explicit +02:00/Z values, and those textual
@@ -159,7 +166,7 @@ async function runPickupReminders(){
   }
 
   const adminUids=adminsSnapshot.docs.map(doc=>doc.id);
-  const adminPrefs=new Map();
+  const adminPrefs=new Map<string,number>();
   await Promise.all(adminUids.map(async uid=>{
     const pref=(await db.collection("notificationPreferences").doc(uid).get()).data();
     if(pref?.enabled){
@@ -171,7 +178,7 @@ async function runPickupReminders(){
   let sent=0;
 
   for(const orderDoc of ordersSnapshot.docs){
-    const order={id:orderDoc.id,...orderDoc.data()};
+    const order={id:orderDoc.id,...orderDoc.data()} as ReminderOrder;
     if(typeof order.status==="string"&&TERMINAL_STATUSES.has(order.status))continue;
 
     const scheduledAt=parseScheduledFor(order.scheduledFor);
@@ -180,7 +187,7 @@ async function runPickupReminders(){
     // scan bounded even though the query intentionally avoids fragile string ranges.
     if(scheduledAt < now-CATCH_UP_WINDOW_MS || scheduledAt > now+90*60*1000)continue;
 
-    const recipients=[];
+    const recipients:Recipient[]=[];
     if(typeof order.customerId==="string"){
       const pref=(await db.collection("notificationPreferences").doc(order.customerId).get()).data();
       if(pref?.enabled){
@@ -216,7 +223,7 @@ async function runPickupReminders(){
   return summary;
 }
 
-async function sendTestNotification(uid){
+async function sendTestNotification(uid:string):Promise<NotificationResult>{
   const result=await sendToUser(uid,{
     data:{title:"BOEMO test notification",body:"Push notifications are working on this device.",link:"/account",test:"true"},
     webpush:{
