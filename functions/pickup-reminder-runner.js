@@ -66,20 +66,34 @@ async function sendToUser(uid,message){
   };
 }
 
-async function alreadySent(jobId){
-  return (await db.collection("notificationDeliveries").doc(jobId).get()).exists;
+async function claimDelivery(jobId,data){
+  const ref=db.collection("notificationDeliveries").doc(jobId);
+  return db.runTransaction(async transaction=>{
+    const snapshot=await transaction.get(ref);
+    if(snapshot.exists)return false;
+    transaction.create(ref,{
+      ...data,
+      status:"sending",
+      claimedAt:new Date().toISOString()
+    });
+    return true;
+  });
 }
 
 async function markSent(jobId,data){
   await db.collection("notificationDeliveries").doc(jobId).set({
     ...data,
+    status:"sent",
     sentAt:new Date().toISOString()
-  });
+  },{merge:true});
+}
+
+async function releaseDelivery(jobId){
+  await db.collection("notificationDeliveries").doc(jobId).delete();
 }
 
 async function remindUser(uid,leadMinutes,order,admin){
   const jobId=order.id+"_"+uid+"_"+leadMinutes;
-  if(await alreadySent(jobId))return {sent:false,reason:"already-sent"};
 
   const scheduledTime=parseScheduledFor(order.scheduledFor);
   if(!Number.isFinite(scheduledTime))return {sent:false,reason:"invalid-scheduled-time"};
@@ -98,29 +112,41 @@ async function remindUser(uid,leadMinutes,order,admin){
   const link=admin?"/admin":"/account";
   const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
 
-  const result=await sendToUser(uid,{
-    notification:{title,body},
-    data:{link,orderId:order.id},
-    webpush:{
-      fcmOptions:{link:publicUrl+link},
-      notification:{
-        tag:"boemo-pickup-"+order.id,
-        icon:"/icon.svg",
-        badge:"/icon.svg"
-      }
-    }
-  });
-
-  if(result.sent){
-    await markSent(jobId,{
-      orderId:order.id,
-      recipientUid:uid,
-      leadMinutes,
-      admin
-    });
+  const deliveryData={
+    orderId:order.id,
+    recipientUid:uid,
+    leadMinutes,
+    admin
+  };
+  if(!await claimDelivery(jobId,deliveryData)){
+    return {sent:false,reason:"already-sent-or-in-progress"};
   }
 
-  return result;
+  try{
+    const result=await sendToUser(uid,{
+      notification:{title,body},
+      data:{link,orderId:order.id},
+      webpush:{
+        fcmOptions:{link:publicUrl+link},
+        notification:{
+          tag:"boemo-pickup-"+order.id,
+          icon:"/icon.svg",
+          badge:"/icon.svg"
+        }
+      }
+    });
+
+    if(result.sent){
+      await markSent(jobId,deliveryData);
+    }else{
+      await releaseDelivery(jobId);
+    }
+
+    return result;
+  }catch(error){
+    await releaseDelivery(jobId).catch(()=>{});
+    throw error;
+  }
 }
 
 async function runPickupReminders(){
