@@ -123,8 +123,7 @@ async function remindUser(uid,leadMinutes,order,admin){
 
   try{
     const result=await sendToUser(uid,{
-      notification:{title,body},
-      data:{link,orderId:order.id},
+      data:{title,body,link,orderId:order.id},
       webpush:{
         fcmOptions:{link:publicUrl+link},
         notification:{
@@ -223,11 +222,7 @@ async function runPickupReminders(){
 
 async function sendTestNotification(uid){
   const result=await sendToUser(uid,{
-    notification:{
-      title:"BOEMO test notification",
-      body:"Push notifications are working on this device."
-    },
-    data:{link:"/account",test:"true"},
+    data:{title:"BOEMO test notification",body:"Push notifications are working on this device.",link:"/account",test:"true"},
     webpush:{
       fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+"/account"},
       notification:{tag:"boemo-test-notification",icon:"/icon.svg",badge:"/icon.svg"}
