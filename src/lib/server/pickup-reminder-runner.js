@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const {cert}=require("firebase-admin/app");
-const {initializeApp,getApps}=require("firebase-admin/app");
-const {getFirestore}=require("firebase-admin/firestore");
-const {getMessaging}=require("firebase-admin/messaging");
+import {cert,initializeApp,getApp,getApps} from "firebase-admin/app";
+import {getFirestore} from "firebase-admin/firestore";
+import {getMessaging} from "firebase-admin/messaging";
 
 if(!getApps().length){
   const raw=process.env.FIREBASE_ADMIN_KEY;
@@ -230,4 +228,4 @@ async function sendTestNotification(uid){
   return result;
 }
 
-module.exports={runPickupReminders,sendTestNotification};
+export {runPickupReminders,sendTestNotification};
