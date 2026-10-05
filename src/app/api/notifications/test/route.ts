@@ -27,7 +27,7 @@ export async function POST(request:Request){
     const uid=await requireUid(request);
     const {sendTestNotification}=await import("@/lib/server/pickup-reminder-runner");
     const result=await sendTestNotification(uid);
-    return NextResponse.json({sent:true,...result});
+    return NextResponse.json(result);
   }catch(error){
     console.error("BOEMO test notification failed:",error);
     return NextResponse.json(
