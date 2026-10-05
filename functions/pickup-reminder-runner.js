@@ -95,7 +95,7 @@ async function remindUser(uid,leadMinutes,order,admin){
   const body=admin
     ?"Pickup in "+leadMinutes+" minutes · "+order.customerName+" · "+items+" · "+timeText
     :"Your BOEMO pickup is in "+leadMinutes+" minutes at "+timeText+". "+items;
-  const link=admin?"/admin":"/orders/"+order.id;
+  const link=admin?"/admin":"/account";
   const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
 
   const result=await sendToUser(uid,{
