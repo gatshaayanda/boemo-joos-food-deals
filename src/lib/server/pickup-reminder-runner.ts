@@ -56,7 +56,7 @@ async function sendToUser(uid:string,message:Omit<MulticastMessage,"tokens">):Pr
   });
 
   await Promise.all(response.responses.map((result,index)=>{
-    if(result.success||!INVALID_TOKEN_CODES.has(result.error?.code))return Promise.resolve();
+    if(result.success||!result.error?.code||!INVALID_TOKEN_CODES.has(result.error.code))return Promise.resolve();
     return tokens[index].ref.delete();
   }));
 
