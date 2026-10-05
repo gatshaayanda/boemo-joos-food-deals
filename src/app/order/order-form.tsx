@@ -25,13 +25,7 @@ export default function OrderForm(){
  const unavailableSelected=useMemo(()=>selected.filter(item=>!visibleMenu.some(availableItem=>availableItem.id===item.id)),[selected,visibleMenu]);
  const total=selected.filter(item=>!unavailableSelected.some(unavailable=>unavailable.id===item.id)).reduce((sum,item)=>sum+orderUnitPrice(item,item.quantity)*item.quantity,0);
  function change(id:string,delta:number){setQuantities(current=>({...current,[id]:Math.max(0,(current[id]??0)+delta)}))}
- function onScheduledForChange(value:string){
-  setScheduledFor(value);
-  if(value.length>=10){
-   const nextDate=value.slice(0,10);
-   setSelectedDate(current=>current===nextDate?current:nextDate);
-  }
-}
+ function onScheduledDateChange(value:string){setScheduledDate(value);setSelectedDate(value)}
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(busy)return;if(!selected.length){setError(menuUnavailable||!visibleMenu.length?"No menu items are currently published for this date. Choose another published date or call BOEMO on 76425849 / 76769834.":"Choose at least one food item.");return}if(unavailableSelected.length){setError("One or more selected items are not published for "+weekdayForDate(selectedDate)+". Remove them or choose a date when they are available.");return}setBusy(true);setError("");
   const form=new FormData(event.currentTarget),name=String(form.get("customerName")??"").trim(),phone=String(form.get("phone")??"").trim(),mode=String(form.get("mode")??"pickup") as "pickup"|"delivery",formDate=String(form.get("scheduledDate")??scheduledDate),formTime=String(form.get("scheduledTime")??scheduledTime),scheduledFor=gaboroneScheduledIso(formDate&&formTime?`${formDate}T${formTime}`:""),deliveryLocation=String(form.get("deliveryLocation")??"").trim(),instructions=String(form.get("instructions")??"").trim();
