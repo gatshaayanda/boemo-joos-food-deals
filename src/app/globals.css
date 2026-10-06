@@ -160,3 +160,46 @@ h1 em{font-style:normal;color:var(--boemo-gold);text-shadow:0 0 22px rgba(255,20
 }
 
 .saveAction{display:grid;gap:8px;margin-top:4px}.saveHint{color:#a79f94;font-size:.72rem;line-height:1.45}.adminNotice{position:sticky;top:12px;z-index:15;box-shadow:0 8px 24px rgba(0,0,0,.3)}.savedBadge{display:inline-flex;align-items:center;gap:5px;color:#bff2c7;font-size:.76rem;font-weight:900;white-space:nowrap}
+
+.conversationHub,.conversationPanel{margin-top:22px;background:#151515;border:1px solid #39352f;border-radius:18px;padding:20px}
+.requestChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.requestChoice{position:relative;text-align:left;background:#111112;border:1px solid #39352f;border-radius:14px;padding:16px;color:#fff;cursor:pointer;display:grid;gap:5px}
+.requestChoice:hover{border-color:var(--boemo-gold);transform:translateY(-1px)}
+.requestChoice span{color:var(--boemo-muted);font-size:.78rem;line-height:1.4;padding-right:22px}
+.requestChoice b{position:absolute;right:15px;top:16px;color:var(--boemo-gold);font-size:1.2rem}
+.conversationList{display:grid;gap:8px}
+.conversationRow,.inboxRow{display:grid;grid-template-columns:12px 1fr auto;gap:11px;align-items:center;width:100%;text-align:left;background:#111112;border:1px solid #39352f;border-radius:13px;padding:13px;color:#fff;cursor:pointer}
+.conversationRow:hover,.inboxRow:hover,.inboxRow.selected{border-color:var(--boemo-gold)}
+.conversationRow span:nth-child(2),.inboxRow span:nth-child(2){min-width:0;display:grid;gap:4px}
+.conversationRow strong,.inboxRow strong{font-size:.86rem}
+.conversationRow small,.inboxRow small{color:var(--boemo-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conversationRow time,.inboxRow time{color:#8f887e;font-size:.68rem}
+.conversationDot{width:9px;height:9px;border-radius:50%;background:#514a42}
+.conversationDot[data-unread="true"]{background:var(--boemo-gold);box-shadow:0 0 10px rgba(255,200,0,.5)}
+.conversationHeader{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:15px}
+.conversationHeader h2{font-size:1.5rem;margin:6px 0}
+.conversationHeader p{color:var(--boemo-muted);margin:0;line-height:1.5}
+.messageList{display:grid;gap:10px;max-height:520px;overflow:auto;padding:5px 2px 12px}
+.messageBubble{max-width:min(86%,650px);border:1px solid #39352f;border-radius:16px;padding:11px 13px}
+.messageMine{margin-left:auto;background:#201d15;border-color:#594717}
+.messageThem{margin-right:auto;background:#111112}
+.messageRole{font-size:.66rem;color:#9f978c;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.messageBubble p{white-space:pre-wrap;line-height:1.5;margin:7px 0 0}
+.messageAttachment{display:flex;align-items:center;gap:9px;margin-top:9px;padding:10px;border:1px solid #4a443b;border-radius:10px;background:#0b0b0c;font-weight:850}
+.messageAttachment small{display:block;color:#9f978c;font-weight:600;margin-left:auto}
+.messageComposer{border-top:1px solid #39352f;padding-top:14px;margin-top:5px}
+.messageComposer textarea{width:100%;resize:vertical;background:#0f0f10;color:#fff;border:1px solid #514a42;border-radius:12px;padding:12px;outline:none}
+.messageComposer textarea:focus{border-color:var(--boemo-gold);box-shadow:0 0 0 3px rgba(255,200,0,.1)}
+.composerActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.attachmentButton{display:inline-flex;align-items:center;min-height:42px;padding:9px 12px;border:1px solid #514a42;border-radius:10px;background:#111112;color:#fff;font-weight:900;cursor:pointer}
+.attachmentButton:hover{border-color:var(--boemo-gold);color:var(--boemo-gold)}
+.fileRemove{background:none;border:0;color:#e5c96d;font-size:.72rem;text-decoration:underline;cursor:pointer;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conversationEmpty{border:1px dashed #4a443b;border-radius:15px;padding:25px;text-align:center;color:#fff}
+.conversationEmpty p{color:var(--boemo-muted);line-height:1.55;margin-bottom:0}
+.conversationInbox{margin-top:0}
+.inboxGrid{display:grid;grid-template-columns:minmax(260px,.75fr) minmax(0,1.25fr);gap:12px}
+.inboxList{display:grid;gap:8px;align-content:start;max-height:650px;overflow:auto}
+.adminConversationView{min-width:0;border:1px solid #39352f;border-radius:14px;background:#0f0f10;padding:14px}
+.adminConversationView .messageList{max-height:480px}
+@media(max-width:700px){.requestChoices,.inboxGrid{grid-template-columns:1fr}.messageBubble{max-width:94%}.conversationHeader{display:grid}.adminConversationView{padding:10px}}
+@media(max-width:560px){.requestChoices{grid-template-columns:1fr}.conversationHub,.conversationPanel{padding:15px}.composerActions .button{width:100%}.attachmentButton{flex:1;justify-content:center}}
