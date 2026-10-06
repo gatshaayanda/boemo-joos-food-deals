@@ -234,4 +234,30 @@ async function sendTestNotification(uid:string):Promise<NotificationResult>{
   return result;
 }
 
-export {runPickupReminders,sendTestNotification};
+
+async function sendNewOrderNotifications(orderId:string,customerUid:string):Promise<{sent:number;admins:number}>{
+  const orderSnapshot=await db.collection("orders").doc(orderId).get();
+  if(!orderSnapshot.exists)throw new Error("Order not found.");
+  const order={id:orderSnapshot.id,...orderSnapshot.data()} as ReminderOrder & {total?:unknown;mode?:unknown};
+  if(order.customerId!==customerUid)throw new Error("Order does not belong to this customer.");
+  const adminsSnapshot=await db.collection("admins").get();
+  let sent=0,admins=0;
+  const items=(Array.isArray(order.items)?order.items:[]).map(item=>item.quantity+"× "+item.name).join(" · ");
+  const scheduledTime=parseScheduledFor(order.scheduledFor);
+  const timeText=Number.isFinite(scheduledTime)?new Intl.DateTimeFormat("en-GB",{timeStyle:"short",timeZone:"Africa/Gaborone"}).format(new Date(scheduledTime)):"scheduled time";
+  const body=order.customerName+" · "+items+(typeof order.total==="number"?" · P"+order.total.toFixed(2):"")+" · "+(order.mode==="delivery"?"Delivery":"Pickup")+" "+timeText;
+  const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
+  for(const adminDoc of adminsSnapshot.docs){
+    const uid=adminDoc.id; const pref=(await db.collection("notificationPreferences").doc(uid).get()).data();
+    if(!pref?.enabled)continue; admins++;
+    const jobId="new-order_"+orderId+"_"+uid; const deliveryData={orderId,recipientUid:uid,type:"new-order",admin:true};
+    if(!await claimDelivery(jobId,deliveryData))continue;
+    try{
+      const result=await sendToUser(uid,{data:{title:"New BOEMO order",body,link:"/admin",orderId},webpush:{fcmOptions:{link:publicUrl+"/admin"},notification:{tag:"boemo-new-order-"+orderId,icon:"/icon.svg",badge:"/icon.svg"}}});
+      if(result.sent){await markSent(jobId,deliveryData);sent++;}else await releaseDelivery(jobId);
+    }catch(error){await releaseDelivery(jobId).catch(()=>{});console.error("BOEMO new-order notification failed for "+uid+":",error);}
+  }
+  return {sent,admins};
+}
+
+export {runPickupReminders,sendTestNotification,sendNewOrderNotifications};
