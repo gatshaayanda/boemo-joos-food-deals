@@ -238,10 +238,11 @@ async function sendTestNotification(uid:string):Promise<NotificationResult>{
   const body=isKitchenAdmin
     ? "This device is ready for new-order and pickup alerts."
     : "Hi "+firstName+", this device is ready for your BOEMO pickup reminders.";
+  const link=isKitchenAdmin?"/admin":"/account";
   const result=await sendToUser(uid,{
-    data:{title,body,link:"/account",test:"true"},
+    data:{title,body,link,test:"true"},
     webpush:{
-      fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+"/account"},
+      fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+link},
       notification:{tag:"boemo-test-notification",icon:"/icon.svg",badge:"/icon.svg"}
     }
   });
