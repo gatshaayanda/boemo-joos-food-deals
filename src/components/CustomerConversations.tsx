@@ -9,8 +9,8 @@ const REQUESTS=[["Question","Ask BOEMO a question"],["Food request","Ask about f
 export default function CustomerConversations(){
  const[user,setUser]=useState(auth.currentUser),[conversations,setConversations]=useState<Conversation[]>([]),[selected,setSelected]=useState<string>(),[notice,setNotice]=useState("");
  useEffect(()=>auth.onAuthStateChanged(next=>setUser(next)),[]);
- useEffect(()=>{if(!user){setConversations([]);return}return subscribeToCustomerConversations(user.uid,setConversations,error=>setNotice(error.message))},[user]);
- async function start(title:string){if(!user)return;try{const id=await createCustomerConversation(user.uid,title);setSelected(id)}catch(error){setNotice(error instanceof Error?error.message:"BOEMO could not start the request.")}}
+ useEffect(()=>{if(!user){setConversations([]);setNotice("");return}return subscribeToCustomerConversations(user.uid,setConversations,error=>{const code=(error as {code?:unknown}).code;setNotice(code==="permission-denied"?"Customer messages are temporarily unavailable. Your BOEMO account and orders are still safe.":"We could not load your BOEMO messages right now.")})},[user]);
+ async function start(title:string){if(!user)return;try{const id=await createCustomerConversation(user.uid,title);setSelected(id)}catch(error){const code=(error as {code?:unknown}).code;setNotice(code==="permission-denied"?"Customer messages are temporarily unavailable. Your BOEMO account and orders are still safe.":"BOEMO could not start the request. Please try again.")}}
  if(!user)return null;
  if(selected)return <ConversationPanel conversationId={selected} onBack={()=>setSelected(undefined)}/>;
  return <section className="conversationHub">
