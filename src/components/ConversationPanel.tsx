@@ -12,8 +12,8 @@ function timeText(value:string){const date=new Date(value);return Number.isFinit
 
 export default function ConversationPanel({conversationId,onBack}:{conversationId?:string;onBack?:()=>void}){
  const[user,setUser]=useState(auth.currentUser),[conversation,setConversation]=useState<Conversation|null>(null),[messages,setMessages]=useState<ConversationMessage[]>([]),[text,setText]=useState(""),[file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[notice,setNotice]=useState(""),bottomRef=useRef<HTMLDivElement>(null);
- useEffect(()=>{const stop=auth.onAuthStateChanged?.(()=>setUser(auth.currentUser));return()=>stop?.()},[]);
- useEffect(()=>{if(!conversationId){setConversation(null);setMessages([]);return}const stop=subscribeToConversation(conversationId,setConversation,setMessages,error=>setNotice(error.message));void updateConversationRead(conversationId,"customer");return stop},[conversationId]);
+ useEffect(()=>{const stop=auth.onAuthStateChanged(()=>setUser(auth.currentUser));return stop},[]);
+ useEffect(()=>{if(!conversationId){setConversation(null);setMessages([]);return}const stop=subscribeToConversation(conversationId,setConversation,setMessages,error=>setNotice(error.message));void updateConversationRead(conversationId,"customer").catch(error=>setNotice(error instanceof Error?error.message:"Conversation read state could not be updated."));return stop},[conversationId]);
  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[messages.length]);
 
  async function send(){
