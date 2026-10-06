@@ -412,3 +412,10 @@ The next work should deepen reliability and business operations rather than add 
 - This V2 layer must not replace guest-first food ordering. Ordering remains available without a Google account; the communication hub becomes available once a Firebase customer session exists.
 - Service-worker shell bumped to v12 because /account and /admin now contain the communication experience.
 - Production readiness still requires actual Firebase Rules deployment/verification for the new Firestore and Storage paths and an end-to-end customer -> kitchen -> customer message test with a real image/PDF and push notification. Code being present in GitHub does not mean Firebase Rules are deployed.
+
+
+## Google account sign-in reliability checkpoint (October 2026)
+- The Account page must wait for Firebase Auth state initialization before allowing the Google action; this prevents a restored anonymous guest session from racing the Google upgrade flow.
+- BOEMO explicitly uses browser-local Auth persistence so a customer account remains available across normal page refreshes on the same browser/device.
+- When a new standalone Google account is created, BOEMO immediately creates its own `customers/{uid}` profile instead of relying on a later order to create that record.
+- Google account linking must preserve an existing anonymous guest UID and therefore its associated BOEMO profile/order history.
