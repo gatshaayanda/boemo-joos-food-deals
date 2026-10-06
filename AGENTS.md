@@ -387,3 +387,14 @@ The next work should deepen reliability and business operations rather than add 
 ## Active food-day countdown checkpoint (October 2026)
 - When Today's Food is published and orderable, do not show a live countdown to the next food day. Keep the next-food-day card as a simple planning CTA.
 - When no Today's Food is published, a countdown to the next published food day remains useful and may be shown with the existing pre-order CTA.
+
+## Version 1 semester-readiness checkpoint (October 2026)
+- Firestore web persistence uses `persistentLocalCache` + `persistentMultipleTabManager`. Firestore is responsible for caching active data and queuing writes; the service worker is responsible for the application shell/assets, not private Firestore data.
+- The service worker shell includes `/`, `/order`, `/account`, `/admin`, `/offline` and the required icon, with a bumped shell version whenever customer-facing offline assets change.
+- Customer and kitchen offline truth must remain explicit: a locally queued order is **saved on this device**, not received by the kitchen, until Firestore synchronizes.
+- Every order that needs a kitchen notification gets a local pending-notification marker. Online checkout requests the secure notification endpoint after the Firestore write; reconnect/auth restoration retries any pending notification. Server-side delivery remains idempotent through `notificationDeliveries`.
+- Offline push cannot be guaranteed while the device itself has no network: FCM delivery requires a connected network path to the recipient. The product must never imply otherwise. Once the order reaches Firestore, the server-side notification path can notify enabled kitchen devices even if the customer app is closed.
+- Admin/customer notification permission remains explicit and optional. Enabling kitchen notifications means **new-order alerts + scheduled pickup reminders**; customer devices receive their own pickup reminders.
+- Firestore rules remain the security boundary. Do not weaken them to make offline or notification UI appear to work.
+- Version 1 priority is reliability of the core loop: browse published food → guest order → clear confirmation truth → kitchen queue → status/payment recording → pickup/delivery → receipt/history. Avoid adding unrelated features before the semester launch.
+- Research basis: Firebase documents persistent web cache/queued writes and FCM service-worker requirements; Baymard's 2026 food-delivery benchmark emphasizes repeat ordering, clear fulfillment timing and strong mobile checkout orientation. See the existing research links above.
