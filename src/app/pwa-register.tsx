@@ -42,6 +42,7 @@ export default function PwaRegister() {
     };
     void register();
     void retryPendingOrderNotifications();
+    const stopPendingAuth=onAuthStateChanged(auth,()=>{void retryPendingOrderNotifications()});
     const controllerChange=()=>{if(reloadForUpdate.current)window.location.reload()};
     navigator.serviceWorker?.addEventListener("controllerchange",controllerChange);
     return()=>{window.removeEventListener("online",online);window.removeEventListener("offline",off);window.removeEventListener("beforeinstallprompt",install);navigator.serviceWorker?.removeEventListener("controllerchange",controllerChange);stopPendingAuth()};
