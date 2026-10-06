@@ -260,4 +260,46 @@ async function sendNewOrderNotifications(orderId:string,customerUid:string):Prom
   return {sent,admins};
 }
 
-export {runPickupReminders,sendTestNotification,sendNewOrderNotifications};
+
+async function sendConversationMessageNotification(conversationId:string,messageId:string,senderUid:string):Promise<{sent:number;recipient:string}>{
+  const conversationSnapshot=await db.collection("conversations").doc(conversationId).get();
+  const messageSnapshot=await db.collection("conversations").doc(conversationId).collection("messages").doc(messageId).get();
+  if(!conversationSnapshot.exists||!messageSnapshot.exists)throw new Error("Conversation message not found.");
+  const conversation=conversationSnapshot.data() as Record<string,unknown>;
+  const message=messageSnapshot.data() as Record<string,unknown>;
+  if(message.senderId!==senderUid)throw new Error("Message does not belong to this sender.");
+  const senderRole=String(message.senderRole||"");
+  const customerId=String(conversation.customerId||"");
+  const adminSnapshot=await db.collection("admins").doc(senderUid).get();
+  const senderIsAdmin=adminSnapshot.exists&&["owner","staff"].includes(String(adminSnapshot.data()?.role||"").toLowerCase());
+  if(senderRole==="customer"&&(customerId!==senderUid||senderIsAdmin))throw new Error("Customer message authorization failed.");
+  if(senderRole==="admin"&&!senderIsAdmin)throw new Error("Admin message authorization failed.");
+  const recipientUids:string[]=[];
+  if(senderRole==="customer"){
+    const admins=await db.collection("admins").get();
+    for(const admin of admins.docs){
+      const pref=(await db.collection("notificationPreferences").doc(admin.id).get()).data();
+      if(pref?.enabled)recipientUids.push(admin.id);
+    }
+  }else{
+    if(customerId)recipientUids.push(customerId);
+  }
+  const title=senderRole==="customer"?"New BOEMO customer message":"BOEMO replied to you";
+  const preview=String(message.text||"Attachment sent");
+  const body=preview.length>120?preview.slice(0,117)+"…":preview;
+  const link=senderRole==="customer"?"/admin":"/account";
+  const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
+  let sent=0;
+  for(const uid of recipientUids){
+    const jobId="conversation-message_"+conversationId+"_"+messageId+"_"+uid;
+    const deliveryData={conversationId,messageId,recipientUid:uid,type:"conversation-message"};
+    if(!await claimDelivery(jobId,deliveryData))continue;
+    try{
+      const result=await sendToUser(uid,{data:{title,body,link,conversationId,messageId},webpush:{fcmOptions:{link:publicUrl+link},notification:{tag:"boemo-conversation-"+conversationId,icon:"/icon.svg",badge:"/icon.svg"}}});
+      if(result.sent){await markSent(jobId,deliveryData);sent++;}else await releaseDelivery(jobId);
+    }catch(error){await releaseDelivery(jobId).catch(()=>{});console.error("BOEMO conversation notification failed for "+uid+":",error);}
+  }
+  return {sent,recipient:senderRole==="customer"?"kitchen":"customer"};
+}
+
+export {runPickupReminders,sendTestNotification,sendNewOrderNotifications,sendConversationMessageNotification};
