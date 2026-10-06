@@ -375,3 +375,15 @@ The next work should deepen reliability and business operations rather than add 
 - The scheduled order is stored as the selected Africa/Gaborone date + time with the existing explicit `+02:00` offset convention.
 - Changing the scheduled date must update the menu day without clearing the customer's in-progress food selection.
 - If a planning CTA is changed, preserve this date-to-menu linkage rather than hard-coding a weekday or relying on the device's local timezone.
+
+## Browser push notification operating checkpoint (October 2026)
+- The golden BOEMO notification method is: browser/device permission → FCM token stored under `notificationTokens/{uid}/tokens/{encodedToken}` → Next.js/Vercel server-side Firebase Admin SDK → FCM → service worker/browser notification.
+- A successfully submitted online order requests a server-side **new-order** notification only after the Firestore order write succeeds. Notification failure never turns a successful order into a failed checkout.
+- `/api/notifications/order-created` authenticates the Firebase ID token, verifies the order belongs to that customer, then sends to enabled owner/staff admin devices using the existing FCM sender and idempotent `notificationDeliveries` records.
+- Only admins with notification preferences enabled and a registered FCM token receive the immediate new-order push. Pickup reminders remain separate.
+- Offline orders do not claim kitchen receipt or push delivery until their Firestore write synchronizes; preserve the existing offline truth.
+- Do not introduce Firebase Cloud Functions or Vercel Hobby Cron for this event. If delivery breaks, inspect the Next.js API route, Firebase Admin credentials, admin notification preferences, FCM token records and service worker first.
+
+## Active food-day countdown checkpoint (October 2026)
+- When Today's Food is published and orderable, do not show a live countdown to the next food day. Keep the next-food-day card as a simple planning CTA.
+- When no Today's Food is published, a countdown to the next published food day remains useful and may be shown with the existing pre-order CTA.
