@@ -398,3 +398,17 @@ The next work should deepen reliability and business operations rather than add 
 - Firestore rules remain the security boundary. Do not weaken them to make offline or notification UI appear to work.
 - Version 1 priority is reliability of the core loop: browse published food → guest order → clear confirmation truth → kitchen queue → status/payment recording → pickup/delivery → receipt/history. Avoid adding unrelated features before the semester launch.
 - Research basis: Firebase documents persistent web cache/queued writes and FCM service-worker requirements; Baymard's 2026 food-delivery benchmark emphasizes repeat ordering, clear fulfillment timing and strong mobile checkout orientation. See the existing research links above.
+
+
+## Customer communication V2 checkpoint (October 2026)
+- My BOEMO now includes a private two-way customer communication layer alongside orders, tracking, receipts and notifications.
+- Customers can start a lightweight conversation for a question, food request, catering/event enquiry or advance-order request without learning a complex form.
+- Messages support text plus one optional image or PDF attachment. Attachment size is limited to 10 MB and Cloud Storage rules restrict access to the conversation customer or authorized owner/staff.
+- The kitchen has a first-class Customer Inbox with realtime conversation/message updates, unread state, customer name, request title and reply composer with optional image/PDF attachment.
+- Conversation data is private: customers may query only conversations whose customerId matches their authenticated Firebase UID; authorized owner/staff may operate the inbox. Message writes require the authenticated sender identity and appropriate customer/admin role.
+- Customer message -> kitchen and admin reply -> customer use the existing BOEMO FCM path through the secure Next.js notification endpoint. Notification failure must never discard an already-saved message.
+- The conversation list is deliberately concise and request choices use progressive disclosure: primary actions are visible first; message/attachment detail appears only after the customer opens a conversation. This follows Nielsen Norman Group progressive-disclosure guidance and mobile usability principles.
+- Conversation attachments use Firebase Storage rather than Firestore binary data. Do not make the bucket broadly public or weaken Firestore/Storage rules to fix UI problems.
+- This V2 layer must not replace guest-first food ordering. Ordering remains available without a Google account; the communication hub becomes available once a Firebase customer session exists.
+- Service-worker shell bumped to v12 because /account and /admin now contain the communication experience.
+- Production readiness still requires actual Firebase Rules deployment/verification for the new Firestore and Storage paths and an end-to-end customer -> kitchen -> customer message test with a real image/PDF and push notification. Code being present in GitHub does not mean Firebase Rules are deployed.
