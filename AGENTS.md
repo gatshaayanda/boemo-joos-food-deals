@@ -419,3 +419,15 @@ The next work should deepen reliability and business operations rather than add 
 - BOEMO explicitly uses browser-local Auth persistence so a customer account remains available across normal page refreshes on the same browser/device.
 - When a new standalone Google account is created, BOEMO immediately creates its own `customers/{uid}` profile instead of relying on a later order to create that record.
 - Google account linking must preserve an existing anonymous guest UID and therefore its associated BOEMO profile/order history.
+
+
+## Customer relationship hub UX checkpoint (October 2026)
+- My BOEMO is a customer home, not a settings dump. The first screen prioritizes active order attention, customer-to-kitchen communication, repeat ordering, recent activity, then secondary details/preferences/account controls.
+- Keep guest ordering frictionless. Google account connection is an optional convenience layer that makes repeat orders, tracking, saved details and ongoing communication easier; never require sign-in merely to buy food.
+- Customer communication is intentionally broader than generic "messages". A customer may use a private conversation to ask a question, ask about food/availability, make a reservation/booking request, plan catering/events, discuss an advance order, ask about payment/receipts, ask about the existing food-subscription offer, or explain another need.
+- Conversation is the flexible service channel: customers may write in their own words and attach one optional image or PDF up to 10 MB. Useful examples include food photos, screenshots, receipts, event information and supporting documents. Attachments live in Firebase Storage, never as binary Firestore fields.
+- "Reserve / booking" wording means a request/inquiry to the kitchen, not an automatic confirmed reservation. Payment and subscription conversations likewise do not imply payment collection, subscription activation, discounts or entitlements unless the kitchen has an implemented workflow.
+- Customer conversations remain private to the authenticated customer and authorized owner/staff. New customer messages notify the kitchen through the existing server-side FCM path; admin replies can notify the customer. Never weaken Firestore/Storage rules to make the UI work.
+- Use progressive disclosure: keep the account home concise, move editable profile fields behind "Your details", keep notification testing inside notification preferences, and keep member-benefit explanations secondary to actual orders and service communication.
+- The account should communicate a relationship with BOEMO rather than merely an order-history archive: "Orders, requests and conversations — together in one place." The customer should be able to discover the service channel without knowing which formal process applies.
+- Do not invent operational promises. The communication layer can receive and discuss requests; actual availability, acceptance, pricing, payment receipt, reservation confirmation, subscription entitlement and delivery/pickup commitments remain controlled by the kitchen's real workflow.
