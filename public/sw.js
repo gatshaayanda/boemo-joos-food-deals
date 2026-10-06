@@ -3,7 +3,7 @@ firebase.initializeApp({apiKey:"AIzaSyALJm812m471H04p3UwMTkv5AspRusYrDU",authDom
 const boemoMessaging=firebase.messaging();
 boemoMessaging.onBackgroundMessage((payload)=>{if(payload.notification)return;const title=payload.data?.title||"BOEMO pickup reminder";const options={body:payload.data?.body||"Your BOEMO pickup is coming up.",icon:"/icon.svg",badge:"/icon.svg",data:{link:payload.data?.link||"/account"}};self.registration.showNotification(title,options)});
 self.addEventListener("notificationclick",(event)=>{event.notification.close();const link=event.notification.data?.link||"/account";event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{for(const client of list){if("focus" in client){client.navigate(link);return client.focus()}}return clients.openWindow(link)}))});
-const CACHE_VERSION = "boemo-shell-v12";
+const CACHE_VERSION = "boemo-shell-v13";
 const SHELL_CACHE = CACHE_VERSION;
 const STATIC_LIMIT = 100;
 const PUBLIC_PAGE_LIMIT = 12;
