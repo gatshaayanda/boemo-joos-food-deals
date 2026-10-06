@@ -36,10 +36,10 @@ export default function OrderForm(){
    let customer=user;
    if(!customer)customer=(await signInAnonymously(auth)).user
    const order={customerId:customer.uid,createdAt:new Date().toISOString(),customerName:name,phone,mode,scheduledFor,deliveryLocation,instructions,items:selected.map(({name,price,friendPrice,quantity})=>({name,price:orderUnitPrice({name,price,friendPrice} as MenuItem,quantity),quantity})),total,status:"New" as const};
-   const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);try{window.localStorage.setItem(`boemo-order-${id}`,JSON.stringify({...order,id}))}catch{}
+   const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);try{window.localStorage.setItem(`boemo-order-${id}`,JSON.stringify({...order,id}));window.localStorage.setItem(`boemo-pending-order-notification-${id}`,"1")}catch{}
    // Customer profile persistence is a convenience, never a reason to reject an order.
    // Firestore may deny/read-fail an empty profile while the order write itself is valid.
-   if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false);try{const idToken=await customer.getIdToken();await fetch("/api/notifications/order-created",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+idToken},body:JSON.stringify({orderId:id})})}catch(notificationError){console.warn("BOEMO new-order notification request failed",notificationError)}}
+   if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false);try{const idToken=await customer.getIdToken();const notificationResponse=await fetch("/api/notifications/order-created",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+idToken},body:JSON.stringify({orderId:id})});if(notificationResponse.ok)window.localStorage.removeItem(`boemo-pending-order-notification-${id}`)}catch(notificationError){console.warn("BOEMO new-order notification request failed",notificationError)}}
    if(customer){
     const now=new Date().toISOString();
     void getCustomerProfile(customer.uid)
