@@ -431,3 +431,11 @@ The next work should deepen reliability and business operations rather than add 
 - Use progressive disclosure: keep the account home concise, move editable profile fields behind "Your details", keep notification testing inside notification preferences, and keep member-benefit explanations secondary to actual orders and service communication.
 - The account should communicate a relationship with BOEMO rather than merely an order-history archive: "Orders, requests and conversations — together in one place." The customer should be able to discover the service channel without knowing which formal process applies.
 - Do not invent operational promises. The communication layer can receive and discuss requests; actual availability, acceptance, pricing, payment receipt, reservation confirmation, subscription entitlement and delivery/pickup commitments remain controlled by the kitchen's real workflow.
+
+
+## Golden baseline / recovery checkpoint (October 2026)
+- **Golden baseline commit:** `7aea7f3fe7aaafaff0c2c78f21a90dcaa74aac73` — `docs: lock Version 1 semester readiness contract`.
+- This is the verified recovery point for the BOEMO notification/offline architecture after the notification issue was resolved and the Version 1 readiness contract was locked. It preserves the proven browser → FCM token → Next.js/Vercel Firebase Admin → FCM → service worker path, GitHub Actions five-minute reminder scheduler, Firestore persistent offline cache, and PWA shell behavior.
+- If subsequent BOEMO work causes an unexpected regression in notifications, offline ordering, auth, or core Version 1 behavior, **STOP → inspect reality → compare against this baseline → revert/recover to this commit if required** before layering additional changes.
+- Do not rewrite or weaken the proven notification architecture to solve a later symptom. The baseline uses no Firebase Cloud Functions and no Vercel Hobby Cron for five-minute reminders.
+- For future Admin Hub projects, this recovery/checkpoint discipline and the proven notification architecture should be treated as a reusable pattern: preserve the known-good checkpoint, document the exact commit, then build forward in small verified steps.
