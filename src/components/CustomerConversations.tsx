@@ -19,7 +19,7 @@ export default function CustomerConversations(){
  const[user,setUser]=useState(auth.currentUser),[conversations,setConversations]=useState<Conversation[]>([]),[selected,setSelected]=useState<string>(),[selectedTitle,setSelectedTitle]=useState<string>(),[notice,setNotice]=useState("");
  useEffect(()=>auth.onAuthStateChanged(next=>setUser(next)),[]);
  useEffect(()=>{if(!user){setConversations([]);setNotice("");return}return subscribeToCustomerConversations(user.uid,setConversations,error=>{const code=(error as {code?:unknown}).code;setNotice(code==="permission-denied"?"Customer messages are temporarily unavailable. Your BOEMO account and orders are still safe.":"We could not load your BOEMO messages right now.")})},[user]);
- function start(title:string){if(!user)return;setNotice("");setSelected(undefined);setSelectedTitle(title);}const code=(error as {code?:unknown}).code;setNotice(code==="permission-denied"?"Customer messages are temporarily unavailable. Your BOEMO account and orders are still safe.":"BOEMO could not start the request. Please try again.")}}
+ function start(title:string){if(!user)return;setNotice("");setSelected(undefined);setSelectedTitle(title);}
  if(!user)return null;
  if(selected||selectedTitle)return <ConversationPanel conversationId={selected} conversationTitle={selectedTitle} onBack={()=>{setSelected(undefined);setSelectedTitle(undefined)}}/>;
  return <section className="conversationHub">
