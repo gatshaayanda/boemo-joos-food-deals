@@ -25,8 +25,10 @@ async function requireUid(request:Request){
 export async function POST(request:Request){
   try{
     const uid=await requireUid(request);
+    const body=await request.json().catch(()=>({})) as {deviceToken?:unknown};
+    if(typeof body.deviceToken!=="string"||!body.deviceToken)throw new Error("This device is not registered for BOEMO notifications yet.");
     const {sendTestNotification}=await import("@/lib/server/pickup-reminder-runner");
-    const result=await sendTestNotification(uid);
+    const result=await sendTestNotification(uid,body.deviceToken);
     return NextResponse.json(result);
   }catch(error){
     console.error("BOEMO test notification failed:",error);

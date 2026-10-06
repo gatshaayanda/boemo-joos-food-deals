@@ -68,6 +68,13 @@ async function sendToUser(uid:string,message:Omit<MulticastMessage,"tokens">):Pr
   };
 }
 
+async function sendToDeviceToken(uid:string,token:string,message:Omit<MulticastMessage,"tokens">):Promise<NotificationResult>{
+  const tokens=await tokensFor(uid);
+  if(!tokens.some(item=>item.token===token))return {sent:false,reason:"device-token-not-registered"};
+  const response=await messaging.sendEachForMulticast({...message,tokens:[token]});
+  return {sent:response.successCount>0,successCount:response.successCount,failureCount:response.failureCount};
+}
+
 async function claimDelivery(jobId:string,data:Record<string,unknown>):Promise<boolean>{
   const ref=db.collection("notificationDeliveries").doc(jobId);
   return db.runTransaction(async transaction=>{
@@ -129,6 +136,7 @@ async function remindUser(uid:string,leadMinutes:number,order:ReminderOrder,admi
 
   try{
     const result=await sendToUser(uid,{
+      notification:{title,body},
       data:{title,body,link,orderId:order.id},
       webpush:{
         fcmOptions:{link:publicUrl+link},
@@ -226,7 +234,7 @@ async function runPickupReminders():Promise<{orders:number;reminders:number;sent
   return summary;
 }
 
-async function sendTestNotification(uid:string):Promise<NotificationResult>{
+async function sendTestNotification(uid:string,deviceToken:string):Promise<NotificationResult>{
   const [userRecord,adminSnapshot]=await Promise.all([
     getAuth().getUser(uid),
     db.collection("admins").doc(uid).get()
@@ -239,7 +247,8 @@ async function sendTestNotification(uid:string):Promise<NotificationResult>{
     ? "This device is ready for new-order and pickup alerts."
     : "Hi "+firstName+", this device is ready for your BOEMO pickup reminders.";
   const link=isKitchenAdmin?"/admin":"/account";
-  const result=await sendToUser(uid,{
+  const result=await sendToDeviceToken(uid,deviceToken,{
+    notification:{title,body},
     data:{title,body,link,test:"true"},
     webpush:{
       fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+link},
@@ -271,7 +280,7 @@ async function sendNewOrderNotifications(orderId:string,customerUid:string):Prom
     const jobId="new-order_"+orderId+"_"+uid; const deliveryData={orderId,recipientUid:uid,type:"new-order",admin:true};
     if(!await claimDelivery(jobId,deliveryData))continue;
     try{
-      const result=await sendToUser(uid,{data:{title,body,link:"/admin",orderId},webpush:{fcmOptions:{link:publicUrl+"/admin"},notification:{tag:"boemo-new-order-"+orderId,icon:"/icon.svg",badge:"/icon.svg"}}});
+      const result=await sendToUser(uid,{notification:{title,body},data:{title,body,link:"/admin",orderId},webpush:{fcmOptions:{link:publicUrl+"/admin"},notification:{tag:"boemo-new-order-"+orderId,icon:"/icon.svg",badge:"/icon.svg"}}});
       if(result.sent){await markSent(jobId,deliveryData);sent++;}else await releaseDelivery(jobId);
     }catch(error){await releaseDelivery(jobId).catch(()=>{});console.error("BOEMO new-order notification failed for "+uid+":",error);}
   }
@@ -314,7 +323,7 @@ async function sendConversationMessageNotification(conversationId:string,message
     const deliveryData={conversationId,messageId,recipientUid:uid,type:"conversation-message"};
     if(!await claimDelivery(jobId,deliveryData))continue;
     try{
-      const result=await sendToUser(uid,{data:{title,body,link,conversationId,messageId},webpush:{fcmOptions:{link:publicUrl+link},notification:{tag:"boemo-conversation-"+conversationId,icon:"/icon.svg",badge:"/icon.svg"}}});
+      const result=await sendToUser(uid,{notification:{title,body},data:{title,body,link,conversationId,messageId},webpush:{fcmOptions:{link:publicUrl+link},notification:{tag:"boemo-conversation-"+conversationId,icon:"/icon.svg",badge:"/icon.svg"}}});
       if(result.sent){await markSent(jobId,deliveryData);sent++;}else await releaseDelivery(jobId);
     }catch(error){await releaseDelivery(jobId).catch(()=>{});console.error("BOEMO conversation notification failed for "+uid+":",error);}
   }
