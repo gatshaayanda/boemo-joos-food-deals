@@ -167,6 +167,41 @@ service cloud.firestore {
       allow read: if false;
     }
 
+    match /conversations/{conversationId} {
+      allow create: if signedIn()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string
+        && request.resource.data.lastMessageAt is string
+        && request.resource.data.lastMessagePreview is string
+        && request.resource.data.unreadForCustomer is bool
+        && request.resource.data.unreadForAdmin is bool;
+      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
+      allow update: if isAdmin()
+        || (signedIn()
+          && resource.data.customerId == request.auth.uid
+          && request.resource.data.customerId == resource.data.customerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','lastMessageAt','lastMessagePreview','unreadForCustomer','unreadForAdmin','customerLastReadAt']));
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/conversations/$(conversationId)).data.customerId == request.auth.uid);
+        allow create: if signedIn()
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.senderRole in ['customer','admin']
+          && request.resource.data.text is string
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt is string
+          && (
+            (request.resource.data.senderRole == 'customer' && get(/databases/$(database)/documents/conversations/$(conversationId)).data.customerId == request.auth.uid)
+            || (request.resource.data.senderRole == 'admin' && isAdmin())
+          );
+        allow update, delete: if false;
+      }
+    }
+
     match /dailyReconciliations/{date} {
       allow read: if isAdmin();
       allow create, update: if isAdmin() && validReconciliation();
