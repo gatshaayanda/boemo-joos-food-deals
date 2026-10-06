@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getIdToken } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
 
 type InstallPromptEvent = Event & { prompt:()=>Promise<void>; userChoice:Promise<{outcome:"accepted"|"dismissed";platform:string}> };
 
@@ -10,7 +12,19 @@ export default function PwaRegister() {
 
   useEffect(()=>{
     setOffline(!navigator.onLine);
-    const online=()=>{setOffline(false);setReconnecting(true);window.setTimeout(()=>setReconnecting(false),2200)};
+    const retryPendingOrderNotifications=async()=>{
+      const user=auth.currentUser;if(!user)return;
+      const idToken=await getIdToken(user).catch(()=>null);if(!idToken)return;
+      const pendingKeys=Object.keys(localStorage).filter(key=>key.startsWith("boemo-pending-order-notification-"));
+      for(const key of pendingKeys){
+        const orderId=key.replace("boemo-pending-order-notification-","");
+        try{
+          const response=await fetch("/api/notifications/order-created",{method:"POST",headers:{Authorization:"Bearer "+idToken,"Content-Type":"application/json"},body:JSON.stringify({orderId})});
+          if(response.ok)localStorage.removeItem(key);
+        }catch{}
+      }
+    };
+    const online=()=>{setOffline(false);setReconnecting(true);window.setTimeout(()=>{setReconnecting(false);void retryPendingOrderNotifications()},1200)};
     const off=()=>{setReconnecting(false);setOffline(true)};
     const install=(event:Event)=>{event.preventDefault();setInstallPrompt(event as InstallPromptEvent)};
     window.addEventListener("online",online);window.addEventListener("offline",off);window.addEventListener("beforeinstallprompt",install);
@@ -27,6 +41,7 @@ export default function PwaRegister() {
       }catch{}
     };
     void register();
+    void retryPendingOrderNotifications();
     const controllerChange=()=>{if(reloadForUpdate.current)window.location.reload()};
     navigator.serviceWorker?.addEventListener("controllerchange",controllerChange);
     return()=>{window.removeEventListener("online",online);window.removeEventListener("offline",off);window.removeEventListener("beforeinstallprompt",install);navigator.serviceWorker?.removeEventListener("controllerchange",controllerChange)};
