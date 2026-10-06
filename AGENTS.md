@@ -439,3 +439,11 @@ The next work should deepen reliability and business operations rather than add 
 - If subsequent BOEMO work causes an unexpected regression in notifications, offline ordering, auth, or core Version 1 behavior, **STOP → inspect reality → compare against this baseline → revert/recover to this commit if required** before layering additional changes.
 - Do not rewrite or weaken the proven notification architecture to solve a later symptom. The baseline uses no Firebase Cloud Functions and no Vercel Hobby Cron for five-minute reminders.
 - For future Admin Hub projects, this recovery/checkpoint discipline and the proven notification architecture should be treated as a reusable pattern: preserve the known-good checkpoint, document the exact commit, then build forward in small verified steps.
+
+
+## Customer-production recovery checkpoint (October 2026)
+- The live customer site must reflect the current GitHub `main` branch before customer-facing UX work is considered complete. A source change is not production-ready merely because GitHub accepted the commit.
+- Customer-facing shell changes bump the service-worker cache version; the current shell checkpoint is `boemo-shell-v13`.
+- Firebase Firestore and Storage rules are now deployed through `.github/workflows/firebase-rules-deploy.yml` using the existing `FIREBASE_SERVICE_ACCOUNT_JSON` GitHub secret. This workflow deploys only rules, not Cloud Functions, and does not change the no-Functions/no-Blaze notification architecture.
+- The customer communication UI depends on the conversation rules already present in `firestore.rules` and `storage.rules`. A production permission error for conversations is a deployment/configuration problem, not a reason to weaken rules or remove the feature.
+- For live customer incidents: STOP → inspect the deployed commit and live Firebase rules → compare against the known-good baseline `7aea7f3fe7aaafaff0c2c78f21a90dcaa74aac73` → repair the deployment/configuration → then continue.
