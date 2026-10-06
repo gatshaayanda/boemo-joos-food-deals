@@ -447,3 +447,14 @@ The next work should deepen reliability and business operations rather than add 
 - Firebase Firestore and Storage rules are now deployed through `.github/workflows/firebase-rules-deploy.yml` using the existing `FIREBASE_SERVICE_ACCOUNT_JSON` GitHub secret. This workflow deploys only rules, not Cloud Functions, and does not change the no-Functions/no-Blaze notification architecture.
 - The customer communication UI depends on the conversation rules already present in `firestore.rules` and `storage.rules`. A production permission error for conversations is a deployment/configuration problem, not a reason to weaken rules or remove the feature.
 - For live customer incidents: STOP → inspect the deployed commit and live Firebase rules → compare against the known-good baseline `7aea7f3fe7aaafaff0c2c78f21a90dcaa74aac73` → repair the deployment/configuration → then continue.
+
+
+## Production deployment discipline (October 2026)
+- BOEMO is an active customer-facing app. Every push can consume limited Vercel deployment/build capacity and must therefore be treated as a production resource, not a disposable test mechanism.
+- **Do not push chore, cosmetic, documentation-only, or speculative changes merely to trigger a Vercel build or "see if it works."** Batch non-urgent work and push only when there is a real, reviewed checkpoint.
+- Before every push, inspect the actual current state and ask whether the change is necessary now. Prefer one controlled push containing related verified changes over a sequence of tiny deployment-triggering commits.
+- If Vercel deployment capacity is rate-limited or temporarily exhausted, freeze non-critical pushes. Continue inspecting/preparing fixes locally or in source control, but do not burn additional deployment attempts.
+- A Vercel check failure caused by deployment/build rate limiting is an infrastructure/plan constraint, not evidence that the currently deployed production app is broken. Do not unnecessarily disturb a healthy production deployment to resolve it.
+- **Customer safety takes priority:** never leave a known customer-blocking defect unfixed merely to avoid a deployment. If production is actually broken, make the smallest necessary fix and deploy when the platform permits it.
+- GitHub CI/quality checks remain valuable verification even when Vercel cannot deploy. Do not manufacture extra commits just to obtain a Vercel status.
+- After a Vercel rate-limit window expires, use the existing current `main` state as the deployment candidate. Do not create a throwaway "chore push" solely to restart deployment.
