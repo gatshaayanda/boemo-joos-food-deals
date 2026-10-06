@@ -2,6 +2,7 @@ import {cert,initializeApp,getApps} from "firebase-admin/app";
 import {getFirestore, type DocumentReference} from "firebase-admin/firestore";
 import type {MulticastMessage} from "firebase-admin/messaging";
 import {getMessaging} from "firebase-admin/messaging";
+import {getAuth} from "firebase-admin/auth";
 
 if(!getApps().length){
   const raw=process.env.FIREBASE_ADMIN_KEY;
@@ -106,10 +107,13 @@ async function remindUser(uid:string,leadMinutes:number,order:ReminderOrder,admi
   const items=(Array.isArray(order.items)?order.items:[])
     .map(item=>item.quantity+"× "+item.name)
     .join(" · ");
-  const title=admin?"BOEMO pickup reminder":"Your BOEMO pickup is coming up";
+  const customerName=(order.customerName||"customer").trim();
+  const title=admin
+    ?"Pickup in "+leadMinutes+" minutes · "+customerName
+    :"Your BOEMO pickup is in "+leadMinutes+" minutes";
   const body=admin
-    ?"Pickup in "+leadMinutes+" minutes · "+order.customerName+" · "+items+" · "+timeText
-    :"Your BOEMO pickup is in "+leadMinutes+" minutes at "+timeText+". "+items;
+    ?customerName+" · "+items+" · "+timeText
+    :"Hi "+customerName.split(/\s+/)[0]+", your pickup is at "+timeText+". "+items;
   const link=admin?"/admin":"/account";
   const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
 
@@ -223,8 +227,19 @@ async function runPickupReminders():Promise<{orders:number;reminders:number;sent
 }
 
 async function sendTestNotification(uid:string):Promise<NotificationResult>{
+  const [userRecord,adminSnapshot]=await Promise.all([
+    getAuth().getUser(uid),
+    db.collection("admins").doc(uid).get()
+  ]);
+  const displayName=(userRecord.displayName||"").trim();
+  const firstName=displayName.split(/\s+/)[0]||"there";
+  const isKitchenAdmin=adminSnapshot.exists&&["owner","staff"].includes(String(adminSnapshot.data()?.role||"").toLowerCase());
+  const title=isKitchenAdmin?"BOEMO kitchen alerts are on":"BOEMO notifications are on";
+  const body=isKitchenAdmin
+    ? "This device is ready for new-order and pickup alerts."
+    : "Hi "+firstName+", this device is ready for your BOEMO pickup reminders.";
   const result=await sendToUser(uid,{
-    data:{title:"BOEMO test notification",body:"Push notifications are working on this device.",link:"/account",test:"true"},
+    data:{title,body,link:"/account",test:"true"},
     webpush:{
       fcmOptions:{link:(process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app")+"/account"},
       notification:{tag:"boemo-test-notification",icon:"/icon.svg",badge:"/icon.svg"}
@@ -245,7 +260,9 @@ async function sendNewOrderNotifications(orderId:string,customerUid:string):Prom
   const items=(Array.isArray(order.items)?order.items:[]).map(item=>item.quantity+"× "+item.name).join(" · ");
   const scheduledTime=parseScheduledFor(order.scheduledFor);
   const timeText=Number.isFinite(scheduledTime)?new Intl.DateTimeFormat("en-GB",{timeStyle:"short",timeZone:"Africa/Gaborone"}).format(new Date(scheduledTime)):"scheduled time";
-  const body=order.customerName+" · "+items+(typeof order.total==="number"?" · P"+order.total.toFixed(2):"")+" · "+(order.mode==="delivery"?"Delivery":"Pickup")+" "+timeText;
+  const customerName=(order.customerName||"customer").trim();
+  const title="New order · "+customerName;
+  const body=items+(typeof order.total==="number"?" · P"+order.total.toFixed(2):"")+" · "+(order.mode==="delivery"?"Delivery":"Pickup")+" "+timeText;
   const publicUrl=process.env.BOEMO_PUBLIC_URL||"https://boemo-joos-food-deals.vercel.app";
   for(const adminDoc of adminsSnapshot.docs){
     const uid=adminDoc.id; const pref=(await db.collection("notificationPreferences").doc(uid).get()).data();
@@ -253,7 +270,7 @@ async function sendNewOrderNotifications(orderId:string,customerUid:string):Prom
     const jobId="new-order_"+orderId+"_"+uid; const deliveryData={orderId,recipientUid:uid,type:"new-order",admin:true};
     if(!await claimDelivery(jobId,deliveryData))continue;
     try{
-      const result=await sendToUser(uid,{data:{title:"New BOEMO order",body,link:"/admin",orderId},webpush:{fcmOptions:{link:publicUrl+"/admin"},notification:{tag:"boemo-new-order-"+orderId,icon:"/icon.svg",badge:"/icon.svg"}}});
+      const result=await sendToUser(uid,{data:{title,body,link:"/admin",orderId},webpush:{fcmOptions:{link:publicUrl+"/admin"},notification:{tag:"boemo-new-order-"+orderId,icon:"/icon.svg",badge:"/icon.svg"}}});
       if(result.sent){await markSent(jobId,deliveryData);sent++;}else await releaseDelivery(jobId);
     }catch(error){await releaseDelivery(jobId).catch(()=>{});console.error("BOEMO new-order notification failed for "+uid+":",error);}
   }
@@ -284,7 +301,8 @@ async function sendConversationMessageNotification(conversationId:string,message
   }else{
     if(customerId)recipientUids.push(customerId);
   }
-  const title=senderRole==="customer"?"New BOEMO customer message":"BOEMO replied to you";
+  const customerName=String(conversation.customerName||"customer").trim();
+  const title=senderRole==="customer"?customerName+" sent a message":"BOEMO replied to you";
   const preview=String(message.text||"Attachment sent");
   const body=preview.length>120?preview.slice(0,117)+"…":preview;
   const link=senderRole==="customer"?"/admin":"/account";
