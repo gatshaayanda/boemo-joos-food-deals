@@ -39,7 +39,7 @@ export default function OrderForm(){
    const offline=!navigator.onLine;const{id,writePromise}=createFoodOrder(order);setReference(id);try{window.localStorage.setItem(`boemo-order-${id}`,JSON.stringify({...order,id}))}catch{}
    // Customer profile persistence is a convenience, never a reason to reject an order.
    // Firestore may deny/read-fail an empty profile while the order write itself is valid.
-   if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false)}
+   if(offline){void writePromise.catch(console.error);setPendingSync(true)}else{await writePromise;setPendingSync(false);try{const idToken=await customer.getIdToken();await fetch("/api/notifications/order-created",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+idToken},body:JSON.stringify({orderId:id})})}catch(notificationError){console.warn("BOEMO new-order notification request failed",notificationError)}}
    if(customer){
     const now=new Date().toISOString();
     void getCustomerProfile(customer.uid)
