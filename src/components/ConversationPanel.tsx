@@ -1,9 +1,9 @@
 "use client";
-import {useEffect,useMemo,useRef,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {addDoc,collection,onSnapshot,orderBy,query,serverTimestamp} from "firebase/firestore";
 import {getDownloadURL,ref,uploadBytes} from "firebase/storage";
 import {auth,db,storage} from "@/lib/firebase/client";
-import {createCustomerConversation,subscribeToConversation,subscribeToCustomerConversations,updateConversationRead,recordConversationMessage,updateConversationStatus,type Conversation,type ConversationMessage} from "@/lib/firebase/data";
+import {subscribeToConversation,updateConversationRead,recordConversationMessage,type Conversation,type ConversationMessage} from "@/lib/firebase/data";
 
 const MAX_FILE_SIZE=10*1024*1024;
 const allowed=(file:File)=>file.type.startsWith("image/")||file.type==="application/pdf";
@@ -31,7 +31,8 @@ export default function ConversationPanel({conversationId,onBack}:{conversationI
     attachment={url:await getDownloadURL(uploaded.ref),name:file.name,type:file.type,size:file.size};
    }
    const body=text.trim();
-   await addDoc(messageRef,{senderId:user.uid,senderRole:"customer",text:body,attachment:attachment??null,createdAt:new Date().toISOString(),createdAtServer:serverTimestamp()});\n   await recordConversationMessage(conversationId,"customer",body||("Attachment: "+(attachment?.name||"file")));
+   await addDoc(messageRef,{senderId:user.uid,senderRole:"customer",text:body,attachment:attachment??null,createdAt:new Date().toISOString(),createdAtServer:serverTimestamp()});
+   await recordConversationMessage(conversationId,"customer",body||("Attachment: "+(attachment?.name||"file")));
    setText("");setFile(null);
    const input=document.getElementById("boemo-conversation-file") as HTMLInputElement|null;if(input)input.value="";
    const response=await fetch("/api/notifications/message-created",{method:"POST",headers:{Authorization:"Bearer "+(await user.getIdToken()),"Content-Type":"application/json"},body:JSON.stringify({conversationId,messageId})});
