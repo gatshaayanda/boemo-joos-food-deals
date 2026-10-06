@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getIdToken } from "firebase/auth";
+import { getIdToken, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 
 type InstallPromptEvent = Event & { prompt:()=>Promise<void>; userChoice:Promise<{outcome:"accepted"|"dismissed";platform:string}> };
@@ -44,7 +44,7 @@ export default function PwaRegister() {
     void retryPendingOrderNotifications();
     const controllerChange=()=>{if(reloadForUpdate.current)window.location.reload()};
     navigator.serviceWorker?.addEventListener("controllerchange",controllerChange);
-    return()=>{window.removeEventListener("online",online);window.removeEventListener("offline",off);window.removeEventListener("beforeinstallprompt",install);navigator.serviceWorker?.removeEventListener("controllerchange",controllerChange)};
+    return()=>{window.removeEventListener("online",online);window.removeEventListener("offline",off);window.removeEventListener("beforeinstallprompt",install);navigator.serviceWorker?.removeEventListener("controllerchange",controllerChange);stopPendingAuth()};
   },[]);
 
   async function install(){if(!installPrompt)return;await installPrompt.prompt();await installPrompt.userChoice;setInstallPrompt(null)}
