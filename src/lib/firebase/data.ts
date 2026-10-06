@@ -69,7 +69,8 @@ const STARTER_MENU:MenuItem[]=[
 export async function ensureStarterMenuSeeded():Promise<MenuItem[]>{const snapshot=await getDocs(menuCollection);if(snapshot.docs.length)return snapshot.docs.map(item=>({id:item.id,...item.data() as Omit<MenuItem,"id">})).sort((a,b)=>a.sortOrder-b.sortOrder||a.name.localeCompare(b.name));const marker=await getDoc(doc(settingsCollection,"menu-seed-v1"));if(marker.exists())return [];for(const item of STARTER_MENU)await setDoc(doc(menuCollection,item.id),item);await setDoc(doc(settingsCollection,"menu-seed-v1"),{seeded:true,version:1,updatedAt:new Date().toISOString()});return STARTER_MENU;}
 
 // Legacy menu migration is intentionally disabled. 
-// Existing menu records must never be silently reclassified by the current day.\n
+// Existing menu records must never be silently reclassified by the current day. 
+
 
 const MENU_CACHE_KEY="boemo-menu-cache-v2";
 export function readCachedMenuItems():MenuItem[]{if(typeof window==="undefined")return [];try{const raw=window.localStorage.getItem(MENU_CACHE_KEY);return raw?JSON.parse(raw) as MenuItem[]:[]}catch{return []}}
