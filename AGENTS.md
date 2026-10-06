@@ -458,3 +458,9 @@ The next work should deepen reliability and business operations rather than add 
 - **Customer safety takes priority:** never leave a known customer-blocking defect unfixed merely to avoid a deployment. If production is actually broken, make the smallest necessary fix and deploy when the platform permits it.
 - GitHub CI/quality checks remain valuable verification even when Vercel cannot deploy. Do not manufacture extra commits just to obtain a Vercel status.
 - After a Vercel rate-limit window expires, use the existing current `main` state as the deployment candidate. Do not create a throwaway "chore push" solely to restart deployment.
+
+
+## Kitchen access UX checkpoint (October 2026)
+- The public BOEMO homepage is the single source of truth for human web navigation to Kitchen Control: the footer provides a small, clearly labelled `Kitchen access` entry without placing admin login in the customer primary navigation or ordering flow.
+- Installed BOEMO PWAs also expose a `Kitchen` app shortcut to `/admin`, using the platform launcher shortcut rather than adding customer-facing navigation. PWA shortcuts are an installed-app convenience; the `/admin` Firebase admin gate remains the security boundary.
+- Do not expose an admin session, credentials, admin data, or customer login bypass through this entry point. Customers who discover it should only reach the normal protected admin sign-in screen.
